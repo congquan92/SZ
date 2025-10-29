@@ -51,4 +51,13 @@ export const AuthAPI = {
             throw error;
         }
     },
+    changePassword: async (oldPassword: string, newPassword: string, confirmPassword: string) => {
+        try {
+            const response = await axiosInstance.post("/user/change-password", { oldPassword, newPassword, confirmPassword });
+            return response.data;
+        } catch (error) {
+            console.error("Change password failed", error);
+            throw error;
+        }
+    },
 };
