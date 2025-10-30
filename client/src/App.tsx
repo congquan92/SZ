@@ -8,6 +8,7 @@ import NotFound_404 from "@/page/NotFound_404";
 import Notifications from "@/page/Notifications";
 import Product from "@/page/Product";
 import Profile from "@/page/Profile";
+import Sale from "@/page/Sale";
 import { useAuthStore } from "@/stores/useAuthStores";
 import { useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
@@ -41,6 +42,7 @@ function App() {
         { path: "/cloth-size", element: <ClothSize /> },
         { path: "/notifications", element: <Notifications /> },
         { path: "/profile", element: <Profile /> },
+        { path: "/sale", element: <Sale /> },
         { path: "/*", element: <NotFound_404 /> },
     ];
 

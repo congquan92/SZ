@@ -6,7 +6,7 @@ interface User {
     id: number;
     userName: string;
     fullName: string;
-    gender: "MALE" | "FEMALE" | "BOTH";
+    gender: "MALE" | "FEMALE" | "OTHER";
     dateOfBirth: string;
     email: string;
     phone: string;

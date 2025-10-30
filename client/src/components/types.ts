@@ -7,7 +7,7 @@ export interface Product {
     urlvideo: string;
     urlCoverImage: string;
     soldQuantity: number;
-    avgRating: string;
+    avgRating: number;
     status: "ACTIVE" | "INACTIVE";
     createdAt: string;
     updateAt: string;

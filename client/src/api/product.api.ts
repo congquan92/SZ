@@ -19,4 +19,13 @@ export const ProductAPI = {
             throw error;
         }
     },
+    getCategory: async () => {
+        try {
+            const response = await axiosInstance.get(`/category/all`);
+            return response.data;
+        } catch (error) {
+            console.error("Get categories failed", error);
+            throw error;
+        }
+    },
 };

@@ -109,7 +109,7 @@ export default function Signup() {
                                             <SelectContent>
                                                 <SelectItem value="MALE">Nam</SelectItem>
                                                 <SelectItem value="FEMALE">Nữ</SelectItem>
-                                                <SelectItem value="BOTH">Beta</SelectItem>
+                                                <SelectItem value="OTHER">Beta</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>

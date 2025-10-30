@@ -1,3 +1,4 @@
+import { AuthAPI } from "@/api/auth.api";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuthStore } from "@/stores/useAuthStores";
-import { Calendar, CircleUser, Edit2, ImageIcon, Mail, Phone, User, VenusAndMars, X } from "lucide-react";
+import { Calendar, CircleUser, Edit2, ImageIcon, Loader2, Mail, Phone, User, VenusAndMars, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -14,7 +15,7 @@ interface UserProfile {
     id: number;
     userName: string;
     fullName: string;
-    gender: "MALE" | "FEMALE" | "BOTH";
+    gender: "MALE" | "FEMALE" | "OTHER";
     dateOfBirth: string;
     email: string;
     userRank: string;
@@ -97,6 +98,40 @@ export default function ProfileTab() {
 
     const disabledInput = !isEditing ? "bg-muted" : "";
     const disableSelectWrap = !isEditing ? "pointer-events-none opacity-70 select-none" : "";
+
+    const handleUpdateProfile = async () => {
+        if (!profile) return;
+        console.log("Updating profile...", profile, avatarFile);
+        try {
+            let avatarUrl = profile.avatar || "";
+            if (avatarFile) {
+                const data_url = await AuthAPI.uploadImg(avatarFile);
+                avatarUrl = data_url.data[0];
+            }
+            await AuthAPI.updateProfile(profile.fullName, profile.gender, profile.dateOfBirth, profile.phone, avatarUrl);
+        } catch (error) {
+            console.error("Cancel edit profile failed", error);
+        }
+        setIsSaving(false);
+        setIsEditing(false);
+    };
+    const handleCancelEdit = async () => {
+        if (!user) return;
+        setProfile({
+            id: user.id,
+            userName: user.userName,
+            fullName: user.fullName,
+            gender: user.gender,
+            dateOfBirth: user.dateOfBirth,
+            email: user.email,
+            phone: user.phone,
+            userRank: user.userRankResponse.name,
+            avatar: user.avatar,
+            totalSpent: user.totalSpent,
+        });
+        setAvatarFile(null);
+        setIsEditing(false);
+    };
 
     return (
         <div>
@@ -202,6 +237,20 @@ export default function ProfileTab() {
                                     <Input id="dateOfBirth" type="date" value={profile.dateOfBirth} onChange={(e) => setProfile((prev) => (prev ? { ...prev, dateOfBirth: e.target.value } : prev))} disabled={!isEditing} className={disabledInput} />
                                 </div>
                             </div>
+                            {/* khung rank */}
+
+                            {/* Luu thay doi */}
+                            {isEditing && (
+                                <div className="flex gap-2 pt-1 mt-2">
+                                    <Button onClick={handleUpdateProfile} disabled={isSaving}>
+                                        {isSaving && <Loader2 className="size-4 mr-2 animate-spin" />}
+                                        Lưu thay đổi
+                                    </Button>
+                                    <Button variant="outline" onClick={handleCancelEdit} disabled={isSaving}>
+                                        Hủy
+                                    </Button>
+                                </div>
+                            )}
                         </>
                     )}
                 </CardContent>

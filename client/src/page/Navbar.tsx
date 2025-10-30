@@ -1,17 +1,31 @@
+import { ProductAPI } from "@/api/product.api";
 import Topbar from "@/components/Topbar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
+import type { Category } from "@/page/type";
 import { useAuthStore } from "@/stores/useAuthStores";
 import { Bell, Heart, LogIn, LogOut, MapPin, Menu, Search, ShoppingCart, Store, User, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 export default function Navbar() {
     const [mobileOpen, setMobileOpen] = useState(false);
-    const [search, setSearch] = useState("");
+    const [category, setCategory] = useState<Category[]>();
+    const [search, setSearch] = useState<string>();
+
+    const init = async () => {
+        // Lấy danh mục sản phẩm
+        const category_data = await ProductAPI.getCategory();
+        setCategory(category_data.data);
+        // console.log("Categories:", category_data.data);
+    };
+
+    useEffect(() => {
+        init();
+    }, []);
 
     // Các action trong phần user (dropdown desktop + khu vực mobile)
     const userActionLinks = [
@@ -19,73 +33,7 @@ export default function Navbar() {
         { label: "Đơn hàng", to: "/orders", icon: Store },
         { label: "Yêu thích", to: "/wishlist", icon: Heart },
     ];
-    // Các nhóm dropdown cho desktop
-    const desktopDropdowns = [
-        {
-            trigger: "Áo Nam",
-            columns: [
-                {
-                    items: [
-                        { label: "Tất cả áo nam", to: "/tee", strong: true },
-                        { label: "Áo Polo", to: "/polo" },
-                        { label: "Áo Sơ Mi", to: "/shirt" },
-                        { label: "Áo Khoác", to: "/jacket" },
-                        { label: "Áo Thun", to: "/tee" },
-                        { label: "Áo Hoodie", to: "/hoodie" },
-                        { label: "Áo Len / Sweater", to: "/sweater" },
-                    ],
-                    width: 200,
-                },
-            ],
-        },
-        {
-            trigger: "Quần Nam",
-            columns: [
-                {
-                    items: [
-                        { label: "Tất cả quần nam", to: "/pants", strong: true },
-                        { label: "Quần Jeans", to: "/jeans" },
-                        { label: "Quần Kaki", to: "/khakis" },
-                        { label: "Quần Short", to: "/shorts" },
-                        { label: "Quần Joggers", to: "/joggers" },
-                        { label: "Quần Tây", to: "/formal-pants" },
-                    ],
-                    width: 200,
-                },
-            ],
-        },
-        {
-            trigger: "Bộ Sưu Tập",
-            columns: [
-                {
-                    items: [
-                        { label: "Tất cả bộ sưu tập", to: "/collections", strong: true },
-                        { label: "Set Quần Áo", to: "/sets" },
-                        { label: "Set Thường Ngày", to: "/casual-sets" },
-                        { label: "Set Thể Thao", to: "/sport-sets" },
-                        { label: "Set Công Sở", to: "/formal-sets" },
-                    ],
-                    width: 200,
-                },
-            ],
-        },
-        {
-            trigger: "Phụ Kiện",
-            columns: [
-                {
-                    items: [
-                        { label: "Tất cả phụ kiện", to: "/accessories", strong: true },
-                        { label: "Mũ/Nón", to: "/caps" },
-                        { label: "Túi/Balo", to: "/bags" },
-                        { label: "Thắt Lưng", to: "/belts" },
-                        { label: "Đồng Hồ", to: "/watches" },
-                        { label: "Giày Dép", to: "/shoes" },
-                    ],
-                    width: 200,
-                },
-            ],
-        },
-    ];
+
     // Main nav cho desktop (hàng dưới) + dùng lại cho mobile
     const mainNavLinks = [
         { label: "Trang chủ", to: "/", simple: true },
@@ -108,6 +56,8 @@ export default function Navbar() {
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter") handleSearchClick();
     };
+
+    const hasChildren = (c?: Category) => !!(c?.childCategory && c.childCategory.length);
 
     return (
         <nav className="w-full sticky top-0 z-50">
@@ -241,23 +191,39 @@ export default function Navbar() {
                             ))}
 
                             {/* Dropdown groups */}
-                            {desktopDropdowns.map(({ trigger, columns }, idx) => (
-                                <NavigationMenuItem key={`${trigger}-${idx}`}>
-                                    <NavigationMenuTrigger>{trigger}</NavigationMenuTrigger>
+                            {category?.map((top) => (
+                                <NavigationMenuItem key={top.id}>
+                                    <NavigationMenuTrigger>{top.name}</NavigationMenuTrigger>
                                     <NavigationMenuContent>
-                                        <ul className="grid gap-3 w-[200px]">
-                                            {columns.map((col, cIdx) => (
-                                                <li key={cIdx} style={{ width: col.width ? `${col.width}px` : undefined }}>
-                                                    {col.items.map(({ label, to, strong }) => (
-                                                        <NavigationMenuLink key={to} asChild>
-                                                            <Link to={to} className={`${strong ? "text-lg" : "hover:text-red-500"}`}>
-                                                                {label}
+                                        <div className="p-4">
+                                            <div className="grid gap-4 min-w-[680px] grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                                                {(top.childCategory ?? []).map((mid) => (
+                                                    <div key={mid.id} className="space-y-2">
+                                                        {/* Link cấp 2 */}
+                                                        <NavigationMenuLink asChild>
+                                                            <Link to={`/category/${mid.id}`} className="font-medium leading-none hover:underline">
+                                                                {mid.name}
                                                             </Link>
                                                         </NavigationMenuLink>
-                                                    ))}
-                                                </li>
-                                            ))}
-                                        </ul>
+
+                                                        {/* List cấp 3 */}
+                                                        {hasChildren(mid) && (
+                                                            <ul className="space-y-1">
+                                                                {mid.childCategory!.map((sub) => (
+                                                                    <li key={sub.id}>
+                                                                        <NavigationMenuLink asChild>
+                                                                            <Link to={`/category/${sub.id}`} className="block text-sm text-muted-foreground hover:text-foreground">
+                                                                                {sub.name}
+                                                                            </Link>
+                                                                        </NavigationMenuLink>
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
                                     </NavigationMenuContent>
                                 </NavigationMenuItem>
                             ))}
