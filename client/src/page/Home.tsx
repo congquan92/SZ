@@ -24,7 +24,7 @@ export default function Home() {
 
             {/* San Phẩm Bán Chạy -- lấy theo soldQuantity:desc  */}
             <div className="mt-3">
-                <div className="w-full max-w-[1600px] mx-auto mt-3">
+                <div className="w-full max-w-[1600px] mx-auto mb-3">
                     <img src="https://file.hstatic.net/1000253775/file/h_ng_b_n_ch_y_6__2_.jpg" alt="Banner Effect" className="w-full h-auto" />
                 </div>
                 <Title title="Sản Phẩm Bán Chạy" subtitle="Khám Phá Sản Phẩm Bán Chạy" />
@@ -35,7 +35,7 @@ export default function Home() {
 
             {/* Hàng Sale 50% */}
             <div className="mt-3">
-                <div className="w-full max-w-[1600px] mx-auto mt-3">
+                <div className="w-full max-w-[1600px] mx-auto mb-3">
                     <img src="https://file.hstatic.net/1000253775/file/flashsale_dk_b277e7264a9c43a190f1bbbd14166c67.jpg" alt="Banner Effect" className="w-full h-auto" />
                 </div>
                 <Title title="Hàng Sale 50%" subtitle="Khám Phá Sản Phẩm Giảm Giá" />

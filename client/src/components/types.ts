@@ -16,9 +16,9 @@ export interface Product {
 interface ProductAttribute {
     id: number;
     name: string;
-    attributeValue: [{ id: number; image: string; value: string }];
+    attributeValue: { id: number; image: string | null; value: string }[];
 }
-interface ProductVariant {
+export interface ProductVariant {
     id: number;
     weight: number;
     length: number;
@@ -27,7 +27,7 @@ interface ProductVariant {
     price: number;
     quantity: number;
     sku: string;
-    variantAttributes: [{ id: number; attribute: string; value: string }];
+    variantAttributes: { id: number; attribute: string; value: string }[];
 }
 
 export interface ProductDetail {

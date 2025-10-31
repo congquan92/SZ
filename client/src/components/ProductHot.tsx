@@ -1,15 +1,17 @@
 import { ProductAPI } from "@/api/product.api";
-import type { Product } from "@/components/types";
+import type { Product, ProductDetail } from "@/components/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { formatVND } from "@/lib/helper";
+import { calculateDiscountPercent, formatVND } from "@/lib/helper";
 import { Heart } from "lucide-react";
 import { useEffect, useState } from "react";
 import { renderStars } from "@/lib/helper.tsx";
+import ProductDialog from "@/components/ProductDialog";
 
 export default function ProductHot() {
     const [products, setProducts] = useState<Product[]>([]);
+    const [selectedProduct, setSelectedProduct] = useState<ProductDetail | null>(null);
 
     const initProducts = async () => {
         const { data } = await ProductAPI.getProduct(10);
@@ -23,6 +25,7 @@ export default function ProductHot() {
     const handelProduct = (id: number) => async () => {
         console.log("Product ID:", id);
         const data = await ProductAPI.getProductById(id);
+        setSelectedProduct(data.data);
         console.log("Product Data:", data.data);
     };
 
@@ -33,7 +36,7 @@ export default function ProductHot() {
                     products.map((product) => (
                         <Card key={product.id} className="group p-0 shadow-none rounded-none cursor-pointer gap-0">
                             <CardContent className=" relative p-2">
-                                <Badge className="absolute top-2 left-2 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-none font-medium z-10"> {Math.round(((product.listPrice - product.salePrice) / product.listPrice) * 100)}%</Badge>
+                                <Badge className="absolute top-2 left-2 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-none font-medium z-10"> {calculateDiscountPercent(product.listPrice, product.salePrice)}%</Badge>
                                 <img src={product.urlCoverImage} alt={product.name} className=" object-cover w-full max-h-[250px] transition-transform duration-500 group-hover:scale-105" loading="lazy" />
                                 <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                                     <Button size="sm" onClick={handelProduct(product.id)} variant="secondary" className="bg-white/90 text-gray-900 hover:bg-white text-xs px-3 py-1.5 rounded-none cursor-pointer backdrop-blur-sm">
@@ -64,6 +67,7 @@ export default function ProductHot() {
                         </Card>
                     ))}
             </div>
+            <ProductDialog open={!!selectedProduct} onClose={() => setSelectedProduct(null)} product={selectedProduct} />
         </>
     );
 }
