@@ -3,11 +3,12 @@ import type { Product, ProductDetail } from "@/components/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { calculateDiscountPercent, formatVND } from "@/lib/helper";
+import { calculateDiscountPercent, formatVND, toSlug } from "@/lib/helper";
 import { Heart } from "lucide-react";
 import { useEffect, useState } from "react";
 import { renderStars } from "@/lib/helper.tsx";
 import ProductDialog from "@/components/ProductDialog";
+import { Link } from "react-router-dom";
 
 export default function ProductHot() {
     const [products, setProducts] = useState<Product[]>([]);
@@ -31,7 +32,7 @@ export default function ProductHot() {
 
     return (
         <>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4 mt-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-2 mt-6">
                 {products &&
                     products.map((product) => (
                         <Card key={product.id} className="group p-0 shadow-none rounded-none cursor-pointer gap-0">
@@ -49,7 +50,9 @@ export default function ProductHot() {
                             </CardContent>
                             <CardFooter className="flex flex-col gap-2 p-3 items-start">
                                 <div className="flex flex-col gap-1">
-                                    <span className="text-l font-medium text-gray-700 line-clamp-2">{product.name}</span>
+                                    <Link to={`/product/${product.id}/${toSlug(product.name)}/${toSlug(product.description)}`} className="text-l font-medium text-gray-700 line-clamp-2 hover:underline">
+                                        {product.name}
+                                    </Link>
                                     <div className="flex items-center gap-2">
                                         {renderStars(product.avgRating)}
                                         <Badge className="bg-yellow-100 text-yellow-800 text-xs px-1.5 py-0.5 rounded-none font-medium">{product.avgRating}</Badge>

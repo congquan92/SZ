@@ -7,6 +7,7 @@ import Navbar from "@/page/Navbar";
 import NotFound_404 from "@/page/NotFound_404";
 import Notifications from "@/page/Notifications";
 import Product from "@/page/Product";
+import ProductDetail from "@/components/ProductDetail";
 import Profile from "@/page/Profile";
 import Sale from "@/page/Sale";
 import { useAuthStore } from "@/stores/useAuthStores";
@@ -39,6 +40,7 @@ function App() {
         { path: "/login", element: <Login /> },
         { path: "/signup", element: <Signup /> },
         { path: "/product", element: <Product /> },
+        { path: "/product/:id/:slug/:description", element: <ProductDetail /> },
         { path: "/cloth-size", element: <ClothSize /> },
         { path: "/notifications", element: <Notifications /> },
         { path: "/profile", element: <Profile /> },
