@@ -19,6 +19,16 @@ export const ProductAPI = {
             throw error;
         }
     },
+    searchProduct: async (query: string, size: number) => {
+        try {
+            const response = await axiosInstance.get(`http://localhost:8080/product/list?keyword=${encodeURIComponent(query)}&page=0&size=${size}`);
+            return response.data;
+        } catch (error) {
+            console.error("Search products failed", error);
+            throw error;
+        }
+    },
+
     getCategory: async () => {
         try {
             const response = await axiosInstance.get(`/category/all`);
