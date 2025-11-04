@@ -8,8 +8,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { calculateDiscountPercent, findVariant, formatVND, hasVariantWithSelection, toSlug } from "@/lib/helper";
 import { Link } from "react-router-dom";
 import { CircleDollarSign, ShoppingCart } from "lucide-react";
-import { ProductAPI } from "@/api/product.api";
 import { toast } from "sonner";
+import { CartAPI } from "@/api/cart.api";
 
 type Props = {
     open: boolean;
@@ -132,7 +132,7 @@ export default function ProductDialog({ open, onClose, product }: Props) {
                 quantity: qty,
             });
 
-            await ProductAPI.addCartItem(variant.id, qty);
+            await CartAPI.addCartItem(variant.id, qty);
         } catch (error) {
             console.error("Error adding to cart:", error);
             toast.error("Thêm vào giỏ hàng thất bại. Vui lòng thử lại.");

@@ -11,20 +11,7 @@ import { toast } from "sonner";
 import { GHNAPI, type GHNProvince, type GHNDistrict, type GHNWard } from "@/api/ghn.api";
 import { AddressAPI } from "@/api/address.api";
 import { useAuthStore } from "@/stores/useAuthStores";
-
-interface Address {
-    id: number;
-    province: string;
-    district: string;
-    ward: string;
-    provinceId: number;
-    districtId: number;
-    wardId: string;
-    streetAddress: string;
-    addressType: "HOME" | "WORK";
-    status: string;
-    defaultAddress: boolean;
-}
+import type { Address } from "@/page/type";
 
 export default function AddressTabGHN() {
     const [addresses, setAddresses] = useState<Address[]>([]);

@@ -1,20 +1,19 @@
 import { ProductAPI } from "@/api/product.api";
+import SearchBar from "@/components/SearchBar";
 import Topbar from "@/components/Topbar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
 import type { Category } from "@/page/type";
 import { useAuthStore } from "@/stores/useAuthStores";
-import { Bell, Heart, LogIn, LogOut, MapPin, Menu, Search, ShoppingCart, Store, User, X } from "lucide-react";
+import { Bell, Heart, LogIn, LogOut, MapPin, Menu, ShoppingCart, Store, User, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 export default function Navbar() {
     const [mobileOpen, setMobileOpen] = useState(false);
     const [category, setCategory] = useState<Category[]>();
-    const [search, setSearch] = useState<string>();
 
     const init = async () => {
         // Lấy danh mục sản phẩm
@@ -49,14 +48,6 @@ export default function Navbar() {
         console.log("Đăng xuất");
     };
 
-    const handleSearchClick = () => {
-        // Xử lý tìm kiếm
-        console.log("Tìm kiếm:", search);
-    };
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === "Enter") handleSearchClick();
-    };
-
     const hasChildren = (c?: Category) => !!(c?.childCategory && c.childCategory.length);
 
     return (
@@ -87,10 +78,7 @@ export default function Navbar() {
                         </div>
 
                         {/* Search */}
-                        <div className="flex-1 mx-6 max-w-lg relative hidden sm:block">
-                            <Input value={search} onChange={(e) => setSearch(e.target.value)} onKeyDown={handleKeyDown} placeholder="Bạn đang tìm gì..." className="pr-10 text-neutral-700 border border-neutral-700 rounded-none" />
-                            <Search onClick={handleSearchClick} className="absolute right-3 top-2.5 h-5 w-5 text-neutral-700 cursor-pointer hover:text-black" />
-                        </div>
+                        <SearchBar className="flex-1 mx-6 max-w-lg hidden sm:block" />
 
                         {/* Right actions */}
                         <div className="flex items-center gap-3 text-sm">
@@ -258,10 +246,7 @@ export default function Navbar() {
 
                         {/* Search bar */}
                         <div className="p-4 border-b">
-                            <div className="relative">
-                                <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Bạn đang tìm gì..." className="pl-10" />
-                                <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-500" />
-                            </div>
+                            <SearchBar className="w-full" />
                         </div>
 
                         {/* User info */}
@@ -293,9 +278,9 @@ export default function Navbar() {
                                             { label: "Quần Nam", to: "/pants" },
                                             { label: "Bộ Sưu Tập", to: "/collections" },
                                             { label: "Phụ Kiện", to: "/accessories" },
-                                        ].map(({ to, label, className }) => (
-                                            <Link key={to} to={to} className={`flex items-center px-2 py-3 hover:bg-gray-50 rounded-md transition-colors ${className ?? " "}`} onClick={() => setMobileOpen(false)}>
-                                                <span>{label}</span>
+                                        ].map((item) => (
+                                            <Link key={item.to} to={item.to} className={`flex items-center px-2 py-3 hover:bg-gray-50 rounded-md transition-colors ${"className" in item ? item.className : ""}`} onClick={() => setMobileOpen(false)}>
+                                                <span>{item.label}</span>
                                             </Link>
                                         ))}
                                     </div>

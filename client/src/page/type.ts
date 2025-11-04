@@ -37,3 +37,16 @@ export interface CartProduct {
     };
     quantity: number;
 }
+export interface Address {
+    id: number;
+    province: string;
+    district: string;
+    ward: string;
+    provinceId: number;
+    districtId: number;
+    wardId: string;
+    streetAddress: string;
+    addressType: "HOME" | "WORK";
+    status: string;
+    defaultAddress: boolean;
+}

@@ -1,4 +1,3 @@
-import { ProductAPI } from "@/api/product.api";
 import { AddressAPI } from "@/api/address.api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { formatVND } from "@/lib/helper";
-import type { CartProduct } from "@/page/type";
+import type { Address, CartProduct } from "@/page/type";
 import { Minus, Plus, Trash2, MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
 import BreadcrumbCustom from "@/components/BreadcrumbCustom";
@@ -17,20 +16,7 @@ import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/stores/useAuthStores";
-
-interface Address {
-    id: number;
-    province: string;
-    district: string;
-    ward: string;
-    provinceId: number;
-    districtId: number;
-    wardId: string;
-    streetAddress: string;
-    addressType: "HOME" | "WORK";
-    status: string;
-    defaultAddress: boolean;
-}
+import { CartAPI } from "@/api/cart.api";
 
 export default function Cart() {
     const [cartItems, setCartItems] = useState<CartProduct[]>([]);
@@ -51,7 +37,7 @@ export default function Cart() {
             setLoading(true);
 
             // Load cart
-            const cartResponse = await ProductAPI.getCart(10);
+            const cartResponse = await CartAPI.getCart(10);
             setCartItems(cartResponse.data.data);
 
             // Load addresses from API
@@ -87,22 +73,28 @@ export default function Cart() {
 
     // Handler functions
     const updateQty = async (itemId: number, newQty: number) => {
-        if (newQty < 1) return;
-        setCartItems((prev) =>
-            prev.map((it) => {
-                if (it.id === itemId) {
-                    const maxQty = it.productVariantResponse.quantity;
-                    return { ...it, quantity: Math.min(newQty, maxQty) };
-                }
-                return it;
-            })
-        );
-        // TODO: Call API to update quantity on server
+        try {
+            if (newQty < 1) return;
+            await CartAPI.updateCartItem(itemId, newQty);
+
+            setCartItems((prev) =>
+                prev.map((it) => {
+                    if (it.id === itemId) {
+                        const maxQty = it.productVariantResponse.quantity;
+                        return { ...it, quantity: Math.min(newQty, maxQty) };
+                    }
+                    return it;
+                })
+            );
+        } catch (error) {
+            toast.error("Cập nhật số lượng thất bại. Vui lòng thử lại.");
+            console.error("Error updating cart item quantity:", error);
+        }
     };
 
     const removeItem = async (itemId: number) => {
         try {
-            await ProductAPI.deleteCartItem(itemId);
+            await CartAPI.deleteCartItem(itemId);
             setCartItems((prev) => prev.filter((it) => it.id !== itemId));
         } catch (error) {
             console.error("Error deleting cart item:", error);
@@ -314,6 +306,7 @@ export default function Cart() {
                                     Áp dụng
                                 </Button>
                             </div>
+                            {/* TODO Voucher */}
                             {couponApplied && (
                                 <div className="text-xs text-green-700">
                                     Đã áp dụng: <span className="font-medium">{couponApplied.code}</span> (−{formatVND(couponApplied.discount)})
