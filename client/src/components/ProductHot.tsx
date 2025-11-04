@@ -9,6 +9,8 @@ import { useEffect, useState } from "react";
 import { renderStars } from "@/lib/helper.tsx";
 import ProductDialog from "@/components/ProductDialog";
 import { Link } from "react-router-dom";
+import { FavoriteAPI } from "@/api/favorite.api";
+import { toast } from "sonner";
 
 export default function ProductHot() {
     const [products, setProducts] = useState<Product[]>([]);
@@ -29,6 +31,14 @@ export default function ProductHot() {
         setSelectedProduct(data.data);
         console.log("Product Data:", data.data);
     };
+    const handelFavorite = (productId: number) => async () => {
+        try {
+            await FavoriteAPI.addFavorite(productId);
+            toast.success("Đã thêm vào danh sách yêu thích!");
+        } catch (error) {
+            console.error("Failed to add favorite:", error);
+        }
+    };
 
     return (
         <>
@@ -43,7 +53,7 @@ export default function ProductHot() {
                                     <Button size="sm" onClick={handelProduct(product.id)} variant="secondary" className="bg-white/90 text-gray-900 hover:bg-white text-xs px-3 py-1.5 rounded-none cursor-pointer backdrop-blur-sm">
                                         Xem nhanh
                                     </Button>
-                                    <Button size="sm" variant="secondary" className="bg-white/90 text-gray-900 hover:bg-white text-xs px-3 py-1.5 rounded-none cursor-pointer backdrop-blur-sm mx-2">
+                                    <Button size="sm" variant="secondary" className="bg-white/90 text-gray-900 hover:bg-white text-xs px-3 py-1.5 rounded-none cursor-pointer backdrop-blur-sm mx-2" onClick={handelFavorite(product.id)}>
                                         <Heart /> Yêu thích
                                     </Button>
                                 </div>
