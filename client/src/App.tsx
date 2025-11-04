@@ -14,6 +14,7 @@ import { useAuthStore } from "@/stores/useAuthStores";
 import { useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
 import Cart from "@/page/Cart";
+import Payment from "@/page/Payment";
 
 function App() {
     const { fetchUser, token, user, loading } = useAuthStore();
@@ -47,6 +48,7 @@ function App() {
         { path: "/profile", element: <Profile /> },
         { path: "/sale", element: <Sale /> },
         { path: "/cart", element: <Cart /> },
+        { path: "/payment", element: <Payment /> },
         { path: "/*", element: <NotFound_404 /> },
     ];
 

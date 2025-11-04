@@ -1,57 +1,30 @@
-import { AddressAPI } from "@/api/address.api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Textarea } from "@/components/ui/textarea";
 import { formatVND } from "@/lib/helper";
-import type { Address, CartProduct } from "@/page/type";
-import { Minus, Plus, Trash2, MapPin } from "lucide-react";
+import type { CartProduct } from "@/page/type";
+import { Minus, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import BreadcrumbCustom from "@/components/BreadcrumbCustom";
 import { toast } from "sonner";
-import { Link } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
-import { useAuthStore } from "@/stores/useAuthStores";
+import { useNavigate } from "react-router-dom";
 import { CartAPI } from "@/api/cart.api";
 
 export default function Cart() {
     const [cartItems, setCartItems] = useState<CartProduct[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
-    const [addresses, setAddresses] = useState<Address[]>([]);
-    const { user } = useAuthStore();
+    const navigate = useNavigate();
 
-    // Payment & voucher
-    const [payment, setPayment] = useState<"cod" | "vnpay" | "momo">("cod");
-    const [voucher, setVoucher] = useState("");
-    const [couponApplied, setCouponApplied] = useState<{ code: string; discount: number } | null>(null);
-    const [note, setNote] = useState("");
-
-    // Load cart and addresses
+    // Load cart
     const init = async () => {
         try {
             setLoading(true);
-
-            // Load cart
             const cartResponse = await CartAPI.getCart(10);
             setCartItems(cartResponse.data.data);
-
-            // Load addresses from API
-            const addressResponse = await AddressAPI.getAddress();
-            const loadedAddresses = addressResponse.data.data;
-            setAddresses(loadedAddresses);
-
-            // Set default address
-            const defaultAddr = loadedAddresses.find((a: Address) => a.defaultAddress);
-            if (defaultAddr) {
-                setSelectedAddressId(defaultAddr.id);
-            }
         } catch (error) {
-            console.error("Error fetching cart or addresses:", error);
+            console.error("Error fetching cart:", error);
             toast.error("Không thể tải thông tin giỏ hàng");
         } finally {
             setLoading(false);
@@ -62,14 +35,8 @@ export default function Cart() {
         init();
     }, []);
 
-    // Get selected address
-    const selectedAddress = addresses.find((a) => a.id === selectedAddressId);
-
     // Calculate totals
     const subTotal = cartItems.reduce((sum, it) => sum + it.productVariantResponse.price * it.quantity, 0);
-    const shippingFee = 0; // You can calculate based on address
-    const discount = couponApplied?.discount || 0;
-    const total = Math.max(0, subTotal + shippingFee - discount);
 
     // Handler functions
     const updateQty = async (itemId: number, newQty: number) => {
@@ -102,34 +69,13 @@ export default function Cart() {
         }
     };
 
-    const applyVoucher = () => {
-        // TODO: Call API to validate voucher
-        if (voucher.trim()) {
-            // Mock validation
-            setCouponApplied({ code: voucher, discount: 50000 });
-        }
-    };
-
-    const placeOrder = async () => {
-        if (!selectedAddress) {
-            toast.error("Vui lòng chọn địa chỉ giao hàng");
-            return;
-        }
-
+    const proceedToCheckout = () => {
         if (cartItems.length === 0) {
             toast.error("Giỏ hàng trống");
             return;
         }
-
-        // TODO: Call API to place order
-        console.log("Placing order:", {
-            cartItems,
-            address: selectedAddress,
-            note,
-            payment,
-            total,
-        });
-        toast.success("Đặt hàng thành công!");
+        // Navigate to payment page with cart items
+        navigate("/payment", { state: { cartItems } });
     };
 
     return (
@@ -222,123 +168,31 @@ export default function Cart() {
                     </CardContent>
                 </Card>
 
-                {/* RIGHT: Summary + form */}
-                <div className="space-y-4">
-                    <Card>
-                        <CardHeader className="pb-3">
-                            <div className="flex items-center justify-between">
-                                <CardTitle>Thông tin giao hàng</CardTitle>
-                                <Link to="/profile?tab=address">
-                                    <Button variant="link" size="sm" className="h-auto p-0">
-                                        Thay đổi
-                                    </Button>
-                                </Link>
+                {/* RIGHT: Order summary */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Tóm tắt đơn hàng</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                        <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">Tạm tính ({cartItems.length} sản phẩm)</span>
+                                <span className="font-medium">{formatVND(subTotal)}</span>
                             </div>
-                        </CardHeader>
-                        <CardContent>
-                            {selectedAddress ? (
-                                <div className="space-y-3">
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <p className="font-medium">{user?.fullName}</p>
-                                                {selectedAddress.defaultAddress && (
-                                                    <Badge variant="default" className="text-xs">
-                                                        Mặc định
-                                                    </Badge>
-                                                )}
-                                            </div>
-                                            <p className="text-sm text-muted-foreground">{user?.phone}</p>
-                                        </div>
-                                    </div>
-                                    <Separator />
-                                    <div className="space-y-1">
-                                        <p className="text-sm">{selectedAddress.streetAddress}</p>
-                                        <p className="text-sm text-muted-foreground">
-                                            {selectedAddress.ward}, {selectedAddress.district}, {selectedAddress.province}
-                                        </p>
-                                    </div>
-                                    <Separator />
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Ghi chú đơn hàng</label>
-                                        <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Ghi chú giao hàng (tùy chọn)..." rows={3} />
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="flex flex-col items-center justify-center py-8 text-center">
-                                    <MapPin className="h-12 w-12 text-muted-foreground mb-3" />
-                                    <p className="text-sm text-muted-foreground mb-3">Chưa có địa chỉ giao hàng</p>
-                                    <Link to="/profile?tab=address">
-                                        <Button variant="outline" size="sm">
-                                            Thêm địa chỉ
-                                        </Button>
-                                    </Link>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Thanh toán</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                            <RadioGroup value={payment} onValueChange={(v) => setPayment(v as "cod" | "vnpay" | "momo")} className="grid gap-2">
-                                <Label className="flex items-center gap-2 rounded-md border p-3 cursor-pointer">
-                                    <RadioGroupItem value="cod" id="pay-cod" />
-                                    <span>Thanh toán khi nhận hàng (COD)</span>
-                                </Label>
-                                <Label className="flex items-center gap-2 rounded-md border p-3 cursor-pointer">
-                                    <RadioGroupItem value="vnpay" id="pay-vnpay" />
-                                    <span>VNPay (QR/Thẻ)</span>
-                                </Label>
-                                <Label className="flex items-center gap-2 rounded-md border p-3 cursor-pointer">
-                                    <RadioGroupItem value="momo" id="pay-momo" />
-                                    <span>MoMo</span>
-                                </Label>
-                            </RadioGroup>
-
                             <Separator />
-
-                            <div className="flex gap-2">
-                                <Input placeholder="Nhập mã giảm giá" value={voucher} onChange={(e) => setVoucher(e.target.value)} />
-                                <Button variant="outline" onClick={applyVoucher}>
-                                    Áp dụng
-                                </Button>
+                            <div className="flex justify-between text-base font-semibold">
+                                <span>Tổng cộng</span>
+                                <span className="text-lg">{formatVND(subTotal)}</span>
                             </div>
-                            {/* TODO Voucher */}
-                            {couponApplied && (
-                                <div className="text-xs text-green-700">
-                                    Đã áp dụng: <span className="font-medium">{couponApplied.code}</span> (−{formatVND(couponApplied.discount)})
-                                </div>
-                            )}
+                        </div>
 
-                            <div className="space-y-1 pt-2 text-sm">
-                                <div className="flex justify-between">
-                                    <span>Tạm tính</span>
-                                    <span>{formatVND(subTotal)}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span>Phí vận chuyển</span>
-                                    <span>{shippingFee === 0 ? "—" : formatVND(shippingFee)}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span>Giảm giá</span>
-                                    <span className="text-green-700">−{formatVND(discount)}</span>
-                                </div>
-                                <Separator />
-                                <div className="flex justify-between text-base font-semibold">
-                                    <span>Tổng thanh toán</span>
-                                    <span>{formatVND(total)}</span>
-                                </div>
-                            </div>
+                        <Button className="w-full mt-4" size="lg" disabled={loading || cartItems.length === 0} onClick={proceedToCheckout}>
+                            Tiến hành thanh toán
+                        </Button>
 
-                            <Button className="w-full mt-2" disabled={loading || cartItems.length === 0} onClick={placeOrder}>
-                                {payment === "cod" ? "Đặt hàng" : "Thanh toán"}
-                            </Button>
-                        </CardContent>
-                    </Card>
-                </div>
+                        <p className="text-xs text-center text-muted-foreground mt-2">Phí vận chuyển và giảm giá sẽ được tính ở bước thanh toán</p>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );
