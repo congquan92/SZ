@@ -13,6 +13,7 @@ import Sale from "@/page/Sale";
 import { useAuthStore } from "@/stores/useAuthStores";
 import { useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
+import Cart from "@/page/Cart";
 
 function App() {
     const { fetchUser, token, user, loading } = useAuthStore();
@@ -45,6 +46,7 @@ function App() {
         { path: "/notifications", element: <Notifications /> },
         { path: "/profile", element: <Profile /> },
         { path: "/sale", element: <Sale /> },
+        { path: "/cart", element: <Cart /> },
         { path: "/*", element: <NotFound_404 /> },
     ];
 

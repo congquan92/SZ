@@ -8,6 +8,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { calculateDiscountPercent, findVariant, formatVND, hasVariantWithSelection, toSlug } from "@/lib/helper";
 import { Link } from "react-router-dom";
 import { CircleDollarSign, ShoppingCart } from "lucide-react";
+import { ProductAPI } from "@/api/product.api";
+import { toast } from "sonner";
 
 type Props = {
     open: boolean;
@@ -119,22 +121,30 @@ export default function ProductDialog({ open, onClose, product }: Props) {
     const discountPercent = calculateDiscountPercent(product.listPrice, product.salePrice);
     const displayPrice = variant?.price ?? product.salePrice;
 
-    const handleAddToCart = () => {
-        if (!variant || !inStock) return;
-        // TODO: Integrate with cart API
-        console.log("ADD_TO_CART", {
-            productId: product.id,
-            variantId: variant.id,
-            selections: pick,
-            quantity: qty,
-        });
-        onClose();
+    const handleAddToCart = async () => {
+        try {
+            if (!variant || !inStock) return;
+            // TODO: Integrate with cart API
+            console.log("ADD_TO_CART", {
+                productId: product.id,
+                variantId: variant.id,
+                selections: pick,
+                quantity: qty,
+            });
+
+            await ProductAPI.addCartItem(variant.id, qty);
+        } catch (error) {
+            console.error("Error adding to cart:", error);
+            toast.error("Thêm vào giỏ hàng thất bại. Vui lòng thử lại.");
+        } finally {
+            onClose();
+        }
     };
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
             {/* TỐI ƯU: Responsive width, max-height và cho phép toàn bộ dialog cuộn */}
-            <DialogContent className="p-0 max-h-[90vh] lg:max-w-[920px] md:max-w-[670px] sm:max-w-[520px] overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-0">
+            <DialogContent className="p-0 max-h-[90vh] lg:max-w-[940px] md:max-w-[670px] sm:max-w-[520px] overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-0">
                 {/* LEFT: CAROUSEL GALLERY */}
                 <div className="relative bg-muted/40 p-3">
                     {discountPercent > 0 && <Badge className="absolute left-3 top-3 z-10 bg-red-600 text-white rounded-none shadow-sm">{discountPercent}%</Badge>}

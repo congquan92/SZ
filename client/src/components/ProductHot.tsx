@@ -55,7 +55,7 @@ export default function ProductHot() {
                                     </Link>
                                     <div className="flex items-center gap-2">
                                         {renderStars(product.avgRating)}
-                                        <Badge className="bg-yellow-100 text-yellow-800 text-xs px-1.5 py-0.5 rounded-none font-medium">{product.avgRating}</Badge>
+                                        <Badge className="bg-yellow-100 text-yellow-800 text-xs px-1.5 py-0.5 rounded-none font-medium">{product.avgRating} Đánh giá</Badge>
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-between w-full">
