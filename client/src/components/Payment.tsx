@@ -6,6 +6,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { formatVND } from "@/lib/helper";
 import type { Address, CartProduct, VoucherIF } from "@/page/type";
 import { MapPin } from "lucide-react";
@@ -27,6 +28,7 @@ export default function Payment() {
     const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
     const [addresses, setAddresses] = useState<Address[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isAddressDialogOpen, setIsAddressDialogOpen] = useState(false);
 
     // Payment & voucher
     const [payment, setPayment] = useState<"cod" | "vnpay" | "momo">("cod");
@@ -179,11 +181,62 @@ export default function Payment() {
                         <CardHeader className="pb-3">
                             <div className="flex items-center justify-between">
                                 <CardTitle>Thông tin giao hàng</CardTitle>
-                                <Link to="/profile?tab=address">
-                                    <Button variant="link" size="sm" className="h-auto p-0">
-                                        Thay đổi
-                                    </Button>
-                                </Link>
+                                <Dialog open={isAddressDialogOpen} onOpenChange={setIsAddressDialogOpen}>
+                                    <DialogTrigger asChild>
+                                        <Button variant="link" size="sm" className="h-auto p-0">
+                                            Thay đổi
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                                        <DialogHeader>
+                                            <DialogTitle>Chọn địa chỉ giao hàng</DialogTitle>
+                                        </DialogHeader>
+                                        <div className="space-y-3 py-4">
+                                            {addresses.length === 0 ? (
+                                                <div className="flex flex-col items-center justify-center py-8 text-center">
+                                                    <MapPin className="h-12 w-12 text-muted-foreground mb-3" />
+                                                    <p className="text-sm text-muted-foreground mb-3">Chưa có địa chỉ nào</p>
+                                                    <Link to="/profile?tab=address">
+                                                        <Button variant="outline" size="sm">
+                                                            Thêm địa chỉ mới
+                                                        </Button>
+                                                    </Link>
+                                                </div>
+                                            ) : (
+                                                <RadioGroup value={selectedAddressId?.toString()} onValueChange={(v) => setSelectedAddressId(Number(v))}>
+                                                    {addresses.map((addr) => (
+                                                        <Label key={addr.id} className="flex items-start gap-3 rounded-lg border p-4 cursor-pointer hover:bg-accent transition-colors" htmlFor={`addr-${addr.id}`}>
+                                                            <RadioGroupItem value={addr.id.toString()} id={`addr-${addr.id}`} className="mt-1" />
+                                                            <div className="flex-1">
+                                                                <div className="flex items-center gap-2 mb-1">
+                                                                    <p className="font-medium">{user?.fullName}</p>
+                                                                    {addr.defaultAddress && (
+                                                                        <Badge variant="default" className="text-xs">
+                                                                            Mặc định
+                                                                        </Badge>
+                                                                    )}
+                                                                </div>
+                                                                <p className="text-sm text-muted-foreground mb-2">{user?.phone}</p>
+                                                                <p className="text-sm">{addr.streetAddress}</p>
+                                                                <p className="text-sm text-muted-foreground">
+                                                                    {addr.ward}, {addr.district}, {addr.province}
+                                                                </p>
+                                                            </div>
+                                                        </Label>
+                                                    ))}
+                                                </RadioGroup>
+                                            )}
+                                        </div>
+                                        <div className="flex justify-between gap-2">
+                                            <Link to="/profile?tab=address">
+                                                <Button variant="outline" size="sm">
+                                                    Quản lý địa chỉ
+                                                </Button>
+                                            </Link>
+                                            <Button onClick={() => setIsAddressDialogOpen(false)}>Xác nhận</Button>
+                                        </div>
+                                    </DialogContent>
+                                </Dialog>
                             </div>
                         </CardHeader>
                         <CardContent>
