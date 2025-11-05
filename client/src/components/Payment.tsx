@@ -65,7 +65,6 @@ export default function Payment() {
 
     useEffect(() => {
         if (!user) {
-            toast.error("Vui lòng đăng nhập để tiếp tục thanh toán");
             navigate("/login");
             return;
         }

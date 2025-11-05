@@ -44,7 +44,7 @@ export default function Gallery() {
                                     className="rounded-full bg-black/70 hover:bg-black text-white cursor-pointer"
                                     onClick={() =>
                                         toast.success("Đã thêm vào giỏ hàng", {
-                                            duration: 2000, // 5 giây
+                                            duration: 2000,
                                             action: {
                                                 label: "Xem ngay",
                                                 onClick: () => navigate("/cart"),

@@ -11,11 +11,15 @@ import BreadcrumbCustom from "@/components/BreadcrumbCustom";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { CartAPI } from "@/api/cart.api";
+import { useCartStore } from "@/stores/useCartStore";
+import { useAuthStore } from "@/stores/useAuthStores";
 
 export default function Cart() {
     const [cartItems, setCartItems] = useState<CartProduct[]>([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+    const { fetchCart } = useCartStore();
+    const { user } = useAuthStore();
 
     // Load cart
     const init = async () => {
@@ -23,7 +27,19 @@ export default function Cart() {
             setLoading(true);
             const cartResponse = await CartAPI.getCart(10);
             setCartItems(cartResponse.data.data);
+            // Sync with cart store
+            fetchCart();
         } catch (error) {
+            if (!user) {
+                toast.error("Vui lòng đăng nhập để xem giỏ hàng", {
+                    duration: 5000,
+                    action: {
+                        label: "Đăng nhập ngay",
+                        onClick: () => navigate("/login"),
+                    },
+                });
+                return;
+            }
             console.error("Error fetching cart:", error);
             toast.error("Không thể tải thông tin giỏ hàng");
         } finally {
@@ -33,6 +49,7 @@ export default function Cart() {
 
     useEffect(() => {
         init();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Calculate totals
@@ -63,6 +80,8 @@ export default function Cart() {
         try {
             await CartAPI.deleteCartItem(itemId);
             setCartItems((prev) => prev.filter((it) => it.id !== itemId));
+            // Sync with cart store
+            fetchCart();
         } catch (error) {
             console.error("Error deleting cart item:", error);
             toast.error("Xoá sản phẩm thất bại. Vui lòng thử lại.");

@@ -10,12 +10,16 @@ import { Link, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { CircleDollarSign, ShoppingCart } from "lucide-react";
+import { CartAPI } from "@/api/cart.api";
+import { useCartStore } from "@/stores/useCartStore";
+import { toast } from "sonner";
 
 export default function ProductDetail() {
     const { id, slug } = useParams();
     const [product, setProduct] = useState<ProductDetailType | null>(null);
     const [carouselApi, setCarouselApi] = useState<CarouselApi>();
     const [currentSlide, setCurrentSlide] = useState(0);
+    const { fetchCart } = useCartStore();
 
     // State sử dụng Record như ProductDialog
     const [pick, setPick] = useState<Record<string, string>>({});
@@ -124,22 +128,20 @@ export default function ProductDetail() {
     const discountPercent = calculateDiscountPercent(product.listPrice, product.salePrice);
     const displayPrice = variant?.price ?? product.salePrice;
 
-    const handleAddToCart = () => {
+    const handleAddToCart = async () => {
         if (!variant || !inStock) {
-            console.warn("Không thể thêm vào giỏ: chưa chọn đủ màu/size hoặc hết hàng");
+            toast.error("Vui lòng chọn đủ thông tin sản phẩm");
             return;
         }
-        // TODO: Integrate with cart API
-        console.log("ADD_TO_CART", {
-            productId: product.id,
-            productName: product.name,
-            variantId: variant.id,
-            sku: variant.sku,
-            price: variant.price,
-            selections: pick,
-            quantity: qty,
-            totalPrice: variant.price * qty,
-        });
+        try {
+            await CartAPI.addCartItem(variant.id, qty);
+            // Sync with cart store
+            fetchCart();
+            toast.success("Đã thêm vào giỏ hàng");
+        } catch (error) {
+            console.error("Error adding to cart:", error);
+            toast.error("Thêm vào giỏ hàng thất bại. Vui lòng thử lại.");
+        }
     };
 
     const handleBuyNow = () => {

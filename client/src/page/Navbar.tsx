@@ -7,6 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
 import type { Category } from "@/page/type";
 import { useAuthStore } from "@/stores/useAuthStores";
+import { useCartStore } from "@/stores/useCartStore";
 import { Bell, Heart, LogIn, LogOut, MapPin, Menu, ShoppingCart, Store, User, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -14,6 +15,8 @@ import { Link } from "react-router-dom";
 export default function Navbar() {
     const [mobileOpen, setMobileOpen] = useState(false);
     const [category, setCategory] = useState<Category[]>();
+    const { user, logout } = useAuthStore();
+    const { cartCount, fetchCart, clearCart } = useCartStore();
 
     const init = async () => {
         // Lấy danh mục sản phẩm
@@ -24,7 +27,11 @@ export default function Navbar() {
 
     useEffect(() => {
         init();
-    }, []);
+        // Fetch cart khi component mount và khi user đã đăng nhập
+        if (user) {
+            fetchCart();
+        }
+    }, [user, fetchCart]);
 
     // Các action trong phần user (dropdown desktop + khu vực mobile)
     const userActionLinks = [
@@ -40,11 +47,10 @@ export default function Navbar() {
         { label: "🏷️ SALE -50%", to: "/sale", simple: true, className: "text-red-500 font-bold" },
     ];
 
-    const { user, logout } = useAuthStore();
-
     const handleLogout = () => {
         // Xử lý đăng xuất
         logout();
+        clearCart();
         console.log("Đăng xuất");
     };
 
@@ -93,11 +99,13 @@ export default function Navbar() {
 
                             <Link to="/cart" className="relative p-2 rounded-md hover:bg-gray-100">
                                 <ShoppingCart size={20} />
-                                <div className="absolute -top-2 -right-2">
-                                    <Badge variant="destructive" className="text-xs px-1 min-w-4 h-5">
-                                        3
-                                    </Badge>
-                                </div>
+                                {cartCount > 0 && (
+                                    <div className="absolute -top-2 -right-2">
+                                        <Badge variant="destructive" className="text-xs px-1 min-w-4 h-5">
+                                            {cartCount}
+                                        </Badge>
+                                    </div>
+                                )}
                             </Link>
 
                             {/* User dropdown */}

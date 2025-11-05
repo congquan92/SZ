@@ -10,6 +10,7 @@ import { Link } from "react-router-dom";
 import { CircleDollarSign, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { CartAPI } from "@/api/cart.api";
+import { useCartStore } from "@/stores/useCartStore";
 
 type Props = {
     open: boolean;
@@ -18,6 +19,8 @@ type Props = {
 };
 
 export default function ProductDialog({ open, onClose, product }: Props) {
+    const { fetchCart } = useCartStore();
+
     // --- Extract attributes ---
     const colorAttr = useMemo(() => product?.attributes.find((a) => a.name.toLowerCase().includes("màu")) ?? null, [product?.attributes]);
     const sizeAttr = useMemo(() => product?.attributes.find((a) => a.name.toLowerCase().includes("kích") || a.name.toLowerCase().includes("size")) ?? null, [product?.attributes]);
@@ -133,6 +136,9 @@ export default function ProductDialog({ open, onClose, product }: Props) {
             });
 
             await CartAPI.addCartItem(variant.id, qty);
+            // Sync with cart store
+            fetchCart();
+            toast.success("Đã thêm vào giỏ hàng");
         } catch (error) {
             console.error("Error adding to cart:", error);
             toast.error("Thêm vào giỏ hàng thất bại. Vui lòng thử lại.");
