@@ -8,62 +8,104 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { formatVND } from "@/lib/helper";
-import type { Address, CartProduct, VoucherIF, ShippingData } from "@/page/type";
-import { MapPin } from "lucide-react";
+import type { Address, VoucherIF, ShippingData, CartProduct } from "@/page/type";
+import { Home, MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
 import BreadcrumbCustom from "@/components/BreadcrumbCustom";
 import { toast } from "sonner";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/useAuthStores";
+import { useCartStore } from "@/stores/useCartStore";
 import { VoucherAPI } from "@/api/voucher.api";
 import { OrderAPI } from "@/api/order.api";
 import { PaymentAPI } from "@/api/payment.api";
 
 export default function Payment() {
-    const location = useLocation();
     const navigate = useNavigate();
     const { user } = useAuthStore();
 
-    // Get cart items from navigation state
-    const cartItems = (location.state?.cartItems as CartProduct[]) || [];
+    // Lấy cart items
+    const { cartItems, fetchCart, clearCart, cartCount } = useCartStore();
 
-    const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
+    // Address
     const [addresses, setAddresses] = useState<Address[]>([]);
+    const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
+
     const [loading, setLoading] = useState(true);
     const [isAddressDialogOpen, setIsAddressDialogOpen] = useState(false);
 
     // Payment & voucher
-    const [payment, setPayment] = useState<"cod" | "vnpay" | "momo">("cod");
+    const [payment, setPayment] = useState<"CASH" | "BANK_TRANSFER" | "MOMO">("CASH");
 
+    // Voucher
     const [voucher, setVoucher] = useState<VoucherIF[]>([]);
     const [totalVoucher, setTotalVoucher] = useState<number>(0);
     const [selectedVoucher, setSelectedVoucher] = useState<string | null>(null);
 
-    const [note, setNote] = useState("");
+    // shipping
     const [shippingData, setShippingData] = useState<ShippingData | null>(null);
-    const [shippingFee, setShippingFee] = useState<number>(0);
+    const [shippingFee, setShippingFee] = useState<number>(0); // Phí vận chuyển
+
+    const [note, setNote] = useState("");
 
     const [orderItems, setOrderItems] = useState<Array<{ quantity: number; productVariantId: number }>>([]);
 
+    // Khởi tạo dữ liệu addresses, voucher và cart
+    const init = async () => {
+        try {
+            setLoading(true);
+
+            // Load cart nếu chưa có
+            if (cartItems.length === 0) {
+                await fetchCart();
+            }
+
+            // Load addresses và vouchers song song
+            const [addressResponse, voucherResponse] = await Promise.all([AddressAPI.getAddress(), VoucherAPI.getVouchers()]);
+
+            setVoucher(voucherResponse.data.data);
+            console.log("Voucher available:", voucherResponse.data);
+
+            const loadedAddresses = addressResponse.data.data;
+            setAddresses(loadedAddresses);
+
+            // Set default address
+            const defaultAddr = loadedAddresses.find((a: Address) => a.defaultAddress);
+            if (defaultAddr) {
+                setSelectedAddressId(defaultAddr.id);
+            }
+        } catch (error) {
+            console.error("Error fetching data:", error);
+            toast.error("Không thể tải thông tin");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (!user) return;
+        init();
+    }, [user]);
+
+    // tính giá trị cần thiết cho phí vận chuyển
     useEffect(() => {
         const fetchShippingFee = async () => {
             try {
-                const tempItems = cartItems.map((it) => {
-                    const prod = it.productBaseResponse;
-                    const varr = it.productVariantResponse;
+                const tempItems = cartItems.map((it: CartProduct) => {
                     return {
-                        nameProduct: prod.name,
-                        length: varr.length || 0,
-                        width: varr.width || 0,
-                        height: varr.height || 0,
-                        weight: varr.weight || 0,
+                        nameProduct: it.productBaseResponse.name,
+                        length: it.productVariantResponse.length,
+                        width: it.productVariantResponse.width,
+                        height: it.productVariantResponse.height,
+                        weight: it.productVariantResponse.weight,
                         quantity: it.quantity,
                     };
                 });
-                setOrderItems(cartItems.map((it) => ({ quantity: it.quantity, productVariantId: it.productVariantResponse.id })));
+                setOrderItems(cartItems.map((it: CartProduct) => ({ quantity: it.quantity, productVariantId: it.productVariantResponse.id })));
 
                 console.log("Items for shipping fee calculation:", tempItems);
                 const dataShipfee = await OrderAPI.estimateDimensions(tempItems);
+
                 setShippingData(dataShipfee.data);
                 console.log("Calculated shipping fee data:", dataShipfee);
             } catch (error) {
@@ -76,16 +118,16 @@ export default function Payment() {
         }
     }, [cartItems]);
 
+    // Tính phí vận chuyển khi có thay đổi địa chỉ hoặc dữ liệu vận chuyển
     useEffect(() => {
         const selectedAddress = addresses.find((a) => a.id === selectedAddressId);
-
         const calculateShippingFee = async () => {
             if (!shippingData || !selectedAddress) return;
 
             try {
                 const response = await OrderAPI.caculateShippingFee({
-                    toDistrictId: selectedAddress?.districtId || 0,
-                    toWardCode: selectedAddress?.wardId.toString() || "",
+                    toDistrictId: selectedAddress?.districtId,
+                    toWardCode: selectedAddress?.wardId,
                     serviceTypeId: shippingData.serviceTypeId,
                     weight: shippingData.weightTotal,
                     length: shippingData.lengthTotal,
@@ -93,7 +135,7 @@ export default function Payment() {
                     height: shippingData.heightTotal,
                     items: shippingData.itemResponses,
                 });
-                console.log("Shipping fee response:", response);
+
                 setShippingFee(response.data.total);
             } catch (error) {
                 console.error("Error calculating shipping fee:", error);
@@ -103,54 +145,10 @@ export default function Payment() {
         calculateShippingFee();
     }, [shippingData, selectedAddressId, addresses]);
 
-    // Load addresses and voucher
-    const init = async () => {
-        try {
-            setLoading(true);
-            const addressResponse = await AddressAPI.getAddress();
-            const voucherResponse = await VoucherAPI.getVouchers();
-            setVoucher(voucherResponse.data.data);
-            console.log("Voucher available:", voucherResponse.data);
-            const loadedAddresses = addressResponse.data.data;
-            setAddresses(loadedAddresses);
-
-            // Set default address
-            const defaultAddr = loadedAddresses.find((a: Address) => a.defaultAddress);
-            if (defaultAddr) {
-                setSelectedAddressId(defaultAddr.id);
-            }
-        } catch (error) {
-            console.error("Error fetching addresses:", error);
-            toast.error("Không thể tải địa chỉ giao hàng");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        // if (!user) {
-        //     navigate("/login");
-        //     return;
-        // }
-        // Redirect to cart if no items
-        if (!cartItems || cartItems.length === 0) {
-            toast.error("Giỏ hàng trống");
-            navigate("/cart");
-            return;
-        }
-
-        console.log("Cart items for payment:", cartItems);
-        init();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    // Get selected address
-    const selectedAddress = addresses.find((a) => a.id === selectedAddressId);
-
-    // Calculate totals
+    // tính tông đơn hàng (chưa voucher và phí ship)
     const subTotal = cartItems.reduce((sum, it) => sum + it.productVariantResponse.price * it.quantity, 0);
 
-    // Calculate  voucher
+    // tính giá trị voucher
     useEffect(() => {
         const selectedVoucherData = voucher ? voucher.find((v) => v.id === Number(selectedVoucher)) : null;
         if (selectedVoucherData) {
@@ -169,10 +167,16 @@ export default function Payment() {
         }
     }, [selectedVoucher, voucher, subTotal]);
 
+    // Tổng cộng
     const total = Math.max(0, subTotal + shippingFee - totalVoucher);
 
+    // Địa chỉ giao hàng
+    const selectedAddress = addresses.find((a) => a.id === selectedAddressId);
+
+    // Đặt hàng
     const placeOrder = async () => {
         try {
+            // Validate
             if (!selectedAddress) {
                 toast.error("Vui lòng chọn địa chỉ giao hàng");
                 return;
@@ -183,7 +187,6 @@ export default function Payment() {
                 return;
             }
 
-            // TODO: Call API to place order
             console.log("Placing order:", {
                 cartItems,
                 address: selectedAddress,
@@ -192,32 +195,56 @@ export default function Payment() {
                 total,
             });
 
-            const t = await OrderAPI.orderAdd(
-                user?.fullName || "",
-                user?.phone || "",
-                selectedAddress.ward || "",
-                selectedAddress.wardId.toString(),
+            // Tạo đơn hàng
+            const orderResponse = await OrderAPI.orderAdd(
+                selectedAddress.customerName,
+                selectedAddress.phoneNumber,
+                selectedAddress.ward,
+                selectedAddress.wardId,
                 selectedAddress.districtId,
                 selectedAddress.provinceId,
-                selectedAddress.district || "",
-                selectedAddress.province || "",
-                `${selectedAddress.streetAddress} ,${selectedAddress.ward}, ${selectedAddress.district}, ${selectedAddress.province}`,
+                selectedAddress.district,
+                selectedAddress.province,
+                `${selectedAddress.streetAddress}, ${selectedAddress.ward}, ${selectedAddress.district}, ${selectedAddress.province}`,
                 orderItems,
-                "BANK_TRANSFER",
+                payment,
                 selectedVoucher ? Number(selectedVoucher) : null
             );
 
-            const l = await PaymentAPI.getPaymentMethods(t.data);
-            toast.success("Đặt hàng thành công!");
+            // Lấy link thanh toán
+            const paymentResponse = await PaymentAPI.getPaymentMethods(orderResponse.data);
 
-            // navigate("/");
-            window.location.href = l.data;
-            console.log("Payment redirect link:", l.data);
+            // Xóa giỏ hàng sau khi đặt hàng thành công
+            clearCart();
+
+            toast.success("Đặt hàng thành công!");
+            console.log("Payment redirect link:", paymentResponse.data);
+
+            // Redirect đến trang thanh toán
+            window.location.href = paymentResponse.data;
         } catch (error) {
             console.error("Error placing order:", error);
-            toast.error("Đặt hàng thất bại");
+            toast.error("Đặt hàng thất bại. Vui lòng thử lại.");
         }
     };
+
+    if (!user) {
+        return (
+            <div className="container mx-auto flex items-center justify-center flex-col min-h-[500px]">
+                <div className="mt-6">Vui lòng đăng nhập để xem trang cá nhân.</div>
+                <Button className="mt-6">
+                    <Link to="/login">
+                        <Home className="inline-flex mr-2" /> Đăng nhập ngay
+                    </Link>
+                </Button>
+            </div>
+        );
+    }
+
+    if (cartCount === 0) {
+        navigate("/cart", { replace: true });
+        return;
+    }
 
     return (
         <div className="container mx-auto p-4 md:p-6">
@@ -373,17 +400,18 @@ export default function Payment() {
                             <CardTitle>Thanh toán</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3">
-                            <RadioGroup value={payment} onValueChange={(v) => setPayment(v as "cod" | "vnpay" | "momo")} className="grid gap-2">
+                            {/* PAYMENT METHOD */}
+                            <RadioGroup value={payment} onValueChange={(v) => setPayment(v as "CASH" | "BANK_TRANSFER" | "MOMO")} className="grid gap-2">
                                 <Label className="flex items-center gap-2 rounded-md border p-3 cursor-pointer">
-                                    <RadioGroupItem value="cod" id="pay-cod" />
+                                    <RadioGroupItem value="CASH" id="pay-cash" />
                                     <span>Thanh toán khi nhận hàng (COD)</span>
                                 </Label>
                                 <Label className="flex items-center gap-2 rounded-md border p-3 cursor-pointer">
-                                    <RadioGroupItem value="vnpay" id="pay-vnpay" />
+                                    <RadioGroupItem value="BANK_TRANSFER" id="pay-bank-transfer" />
                                     <span>VNPay (QR/Thẻ)</span>
                                 </Label>
                                 <Label className="flex items-center gap-2 rounded-md border p-3 cursor-pointer">
-                                    <RadioGroupItem value="momo" id="pay-momo" />
+                                    <RadioGroupItem value="MOMO" id="pay-momo" />
                                     <span>MoMo</span>
                                 </Label>
                             </RadioGroup>
@@ -439,7 +467,7 @@ export default function Payment() {
                             </div>
 
                             <Button className="w-full mt-2" disabled={loading || cartItems.length === 0} onClick={placeOrder}>
-                                {payment === "cod" ? "Đặt hàng" : "Thanh toán"}
+                                {payment === "CASH" ? "Đặt hàng" : "Thanh toán"}
                             </Button>
                         </CardContent>
                     </Card>

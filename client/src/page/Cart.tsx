@@ -23,7 +23,7 @@ export default function Cart() {
     useEffect(() => {
         if (!user) return;
         fetchCart();
-    }, [navigate, fetchCart, user]);
+    }, [fetchCart, user]);
 
     // Handler: Cập nhật số lượng
     const handleUpdateQuantity = async (itemId: number, newQty: number) => {

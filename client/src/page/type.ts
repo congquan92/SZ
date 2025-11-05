@@ -30,10 +30,10 @@ export interface CartProduct {
         price: number;
         quantity: number; // Số lượng tồn kho của biến thể này
         variantAttributes: [{ attribute: string; id: number; value: string }];
-        height: number | null;
-        length: number | null;
-        width: number | null;
-        weight: number | null;
+        height: number;
+        length: number;
+        width: number;
+        weight: number;
     };
     quantity: number;
 }
