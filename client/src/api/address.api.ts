@@ -12,9 +12,9 @@ export const AddressAPI = {
         }
     },
 
-    addAddress: async (province: string, district: string, ward: string, provinceId: number, districtId: number, wardId: string, streetAddress: string, addressType: string) => {
+    addAddress: async (customerName: string, customerPhone: string, province: string, district: string, ward: string, provinceId: number, districtId: number, wardId: string, streetAddress: string, addressType: string) => {
         try {
-            const response = await axiosInstance.post("/user/add/address", { province, district, ward, provinceId, districtId, wardId, streetAddress, addressType });
+            const response = await axiosInstance.post("/user/add/address", { customerName, customerPhone, province, district, ward, provinceId, districtId, wardId, streetAddress, addressType });
             return response.data;
         } catch (error) {
             console.error("Add address failed", error);
@@ -39,9 +39,21 @@ export const AddressAPI = {
             throw error;
         }
     },
-    updateAddress: async (userHasAddressId: number, province: string, district: string, ward: string, provinceId: number, districtId: number, wardId: string, streetAddress: string, addressType: string) => {
+    updateAddress: async (
+        userHasAddressId: number,
+        customerName: string,
+        customerPhone: string,
+        province: string,
+        district: string,
+        ward: string,
+        provinceId: number,
+        districtId: number,
+        wardId: string,
+        streetAddress: string,
+        addressType: string
+    ) => {
         try {
-            const response = await axiosInstance.put(`/user/address/update/${userHasAddressId}`, { province, district, ward, provinceId, districtId, wardId, streetAddress, addressType });
+            const response = await axiosInstance.put(`/user/address/update/${userHasAddressId}`, { customerName, customerPhone, province, district, ward, provinceId, districtId, wardId, streetAddress, addressType });
             return response.data;
         } catch (error) {
             console.error("Update address failed", error);

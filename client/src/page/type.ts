@@ -39,6 +39,8 @@ export interface CartProduct {
 }
 export interface Address {
     id: number;
+    customerName: string;
+    phoneNumber: string;
     province: string;
     district: string;
     ward: string;

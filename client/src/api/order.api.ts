@@ -12,7 +12,7 @@ export const OrderAPI = {
         deliveryAddress: string,
         orderItems: Array<{ quantity: number; productVariantId: number }>,
         paymentType: string,
-        voucherId: number
+        voucherId: number | null
     ) => {
         try {
             const response = await axiosInstance.post(`/orders/add`, {

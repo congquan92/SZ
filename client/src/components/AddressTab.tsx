@@ -10,15 +10,15 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { GHNAPI, type GHNProvince, type GHNDistrict, type GHNWard } from "@/api/ghn.api";
 import { AddressAPI } from "@/api/address.api";
-import { useAuthStore } from "@/stores/useAuthStores";
 import type { Address } from "@/page/type";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
-export default function AddressTabGHN() {
+export default function AddressTab() {
     const [addresses, setAddresses] = useState<Address[]>([]);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingAddress, setEditingAddress] = useState<Address | null>(null);
+    const [addrType, setAddrType] = useState<"HOME" | "WORK">("HOME");
     const [loading, setLoading] = useState(false);
-    const { user } = useAuthStore();
 
     // GHN Data
     const [provinces, setProvinces] = useState<GHNProvince[]>([]);
@@ -31,6 +31,8 @@ export default function AddressTabGHN() {
     // Form state
     const [formData, setFormData] = useState({
         id: 0,
+        customerName: "",
+        phoneNumber: "",
         province: "",
         district: "",
         ward: "",
@@ -38,7 +40,7 @@ export default function AddressTabGHN() {
         districtId: 0,
         wardId: "",
         streetAddress: "",
-        addressType: "HOME",
+        addressType: "",
         status: "",
         defaultAddress: false,
     });
@@ -60,8 +62,16 @@ export default function AddressTabGHN() {
     const loadAddresses = async () => {
         try {
             const response = await AddressAPI.getAddress();
-            setAddresses(response.data.data);
-            console.log("Addresses loaded:", response.data.data);
+            // Sort addresses: default first, then by newest (id descending)
+            const sortedAddresses = response.data.data.sort((a: Address, b: Address) => {
+                // Default address always comes first
+                if (a.defaultAddress && !b.defaultAddress) return -1;
+                if (!a.defaultAddress && b.defaultAddress) return 1;
+                // If both are default or both are not, sort by id (newest first)
+                return b.id - a.id;
+            });
+            setAddresses(sortedAddresses);
+            console.log("Addresses loaded:", sortedAddresses);
         } catch (error) {
             console.error("Load addresses failed", error);
             toast.error("Không thể tải danh sách địa chỉ");
@@ -138,8 +148,11 @@ export default function AddressTabGHN() {
     // Open dialog for adding new address
     const handleAddNew = () => {
         setEditingAddress(null);
+        setAddrType("HOME"); // Reset address type to default
         setFormData({
             id: 0,
+            customerName: "",
+            phoneNumber: "",
             province: "",
             district: "",
             ward: "",
@@ -147,7 +160,7 @@ export default function AddressTabGHN() {
             districtId: 0,
             wardId: "",
             streetAddress: "",
-            addressType: "HOME",
+            addressType: "",
             status: "",
             defaultAddress: false,
         });
@@ -175,6 +188,8 @@ export default function AddressTabGHN() {
             // Set form data AFTER loading districts and wards
             setFormData({
                 id: address.id,
+                customerName: address.customerName,
+                phoneNumber: address.phoneNumber,
                 province: address.province,
                 district: address.district,
                 ward: address.ward,
@@ -187,6 +202,9 @@ export default function AddressTabGHN() {
                 defaultAddress: address.defaultAddress,
             });
 
+            // Set address type for radio button
+            setAddrType(address.addressType as "HOME" | "WORK");
+
             setIsDialogOpen(true);
         } catch (error) {
             console.error(error);
@@ -196,6 +214,14 @@ export default function AddressTabGHN() {
 
     // Validate form
     const validateForm = () => {
+        if (!formData.customerName.trim()) {
+            toast.error("Vui lòng nhập tên người nhận");
+            return false;
+        }
+        if (!formData.phoneNumber.trim()) {
+            toast.error("Vui lòng nhập số điện thoại người nhận");
+            return false;
+        }
         if (!formData.provinceId) {
             toast.error("Vui lòng chọn tỉnh/thành phố");
             return false;
@@ -224,8 +250,20 @@ export default function AddressTabGHN() {
 
         try {
             if (editingAddress) {
-                // Update existing address
-                await AddressAPI.updateAddress(editingAddress.id, formData.province, formData.district, formData.ward, formData.provinceId, formData.districtId, formData.wardId, formData.streetAddress, formData.addressType);
+                // Update existing address - use addrType from state
+                await AddressAPI.updateAddress(
+                    editingAddress.id,
+                    formData.customerName,
+                    formData.phoneNumber,
+                    formData.province,
+                    formData.district,
+                    formData.ward,
+                    formData.provinceId,
+                    formData.districtId,
+                    formData.wardId,
+                    formData.streetAddress,
+                    addrType
+                );
 
                 // If set as default, call default API
                 if (formData.defaultAddress && !editingAddress.defaultAddress) {
@@ -234,8 +272,19 @@ export default function AddressTabGHN() {
 
                 toast.success("Cập nhật địa chỉ thành công");
             } else {
-                // Add new address
-                const response = await AddressAPI.addAddress(formData.province, formData.district, formData.ward, formData.provinceId, formData.districtId, formData.wardId, formData.streetAddress, formData.addressType);
+                // Add new address - use addrType from state
+                const response = await AddressAPI.addAddress(
+                    formData.customerName,
+                    formData.phoneNumber,
+                    formData.province,
+                    formData.district,
+                    formData.ward,
+                    formData.provinceId,
+                    formData.districtId,
+                    formData.wardId,
+                    formData.streetAddress,
+                    addrType
+                );
                 console.log("Add address response:", response);
                 // If set as default, call default API with new address id
                 // if (formData.defaultAddress) {
@@ -261,8 +310,16 @@ export default function AddressTabGHN() {
         try {
             await AddressAPI.defaultAddress(id);
 
-            // Update local state
-            setAddresses((prev) => prev.map((addr) => ({ ...addr, defaultAddress: addr.id === id })));
+            // Update local state and resort
+            setAddresses((prev) => {
+                const updated = prev.map((addr) => ({ ...addr, defaultAddress: addr.id === id }));
+                // Sort: default first, then by newest
+                return updated.sort((a, b) => {
+                    if (a.defaultAddress && !b.defaultAddress) return -1;
+                    if (!a.defaultAddress && b.defaultAddress) return 1;
+                    return b.id - a.id;
+                });
+            });
             toast.success("Đã đặt làm địa chỉ mặc định");
         } catch (error) {
             console.error("Set default address failed", error);
@@ -349,15 +406,15 @@ export default function AddressTabGHN() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="fullName">
-                                        Họ và tên <span className="text-red-500">*</span>
+                                        Họ Tên Người Nhận <span className="text-red-500">*</span>
                                     </Label>
-                                    <Input id="fullName" value={user?.fullName} disabled className="bg-muted" />
+                                    <Input id="fullName" value={formData.customerName} onChange={(e) => setFormData({ ...formData, customerName: e.target.value })} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="phone">
-                                        Số điện thoại <span className="text-red-500">*</span>
+                                        Số điện thoại Người Nhận <span className="text-red-500">*</span>
                                     </Label>
-                                    <Input id="phone" value={user?.phone} disabled className="bg-muted" />
+                                    <Input id="phone" value={formData.phoneNumber} onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })} />
                                 </div>
                             </div>
 
@@ -367,7 +424,7 @@ export default function AddressTabGHN() {
                                         Tỉnh/Thành phố <span className="text-red-500">*</span>
                                     </Label>
                                     <Select value={formData.provinceId ? formData.provinceId.toString() : ""} onValueChange={handleProvinceChange} disabled={loadingProvinces}>
-                                        <SelectTrigger id="province">
+                                        <SelectTrigger id="province" className="w-full">
                                             <SelectValue placeholder={loadingProvinces ? "Đang tải..." : "Chọn tỉnh/thành"} />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -384,7 +441,7 @@ export default function AddressTabGHN() {
                                         Quận/Huyện <span className="text-red-500">*</span>
                                     </Label>
                                     <Select value={formData.districtId ? formData.districtId.toString() : ""} onValueChange={handleDistrictChange} disabled={!formData.provinceId || loadingDistricts}>
-                                        <SelectTrigger id="district">
+                                        <SelectTrigger id="district" className="w-full">
                                             <SelectValue placeholder={loadingDistricts ? "Đang tải..." : "Chọn quận/huyện"} />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -401,7 +458,7 @@ export default function AddressTabGHN() {
                                         Phường/Xã <span className="text-red-500">*</span>
                                     </Label>
                                     <Select value={formData.wardId} onValueChange={handleWardChange} disabled={!formData.districtId || loadingWards}>
-                                        <SelectTrigger id="ward">
+                                        <SelectTrigger id="ward" className="w-full">
                                             <SelectValue placeholder={loadingWards ? "Đang tải..." : "Chọn phường/xã"} />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -422,12 +479,21 @@ export default function AddressTabGHN() {
                                 <Input id="address" value={formData.streetAddress} onChange={(e) => setFormData({ ...formData, streetAddress: e.target.value })} placeholder="Số nhà, tên đường..." />
                             </div>
 
-                            <div className="flex items-center space-x-2">
-                                <input type="checkbox" id="isDefault" checked={formData.defaultAddress} onChange={(e) => setFormData({ ...formData, defaultAddress: e.target.checked })} className="h-4 w-4" />
-                                <Label htmlFor="isDefault" className="cursor-pointer">
-                                    Đặt làm địa chỉ mặc định
-                                </Label>
-                            </div>
+                            {/* TYPE Adderss */}
+                            <RadioGroup value={addrType} onValueChange={(v) => setAddrType(v as "HOME" | "WORK")} className="flex items-center gap-4">
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem id="addr-home" value="HOME" />
+                                    <Label htmlFor="addr-home" className="cursor-pointer">
+                                        Home
+                                    </Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem id="addr-work" value="WORK" />
+                                    <Label htmlFor="addr-work" className="cursor-pointer">
+                                        Công Ty
+                                    </Label>
+                                </div>
+                            </RadioGroup>
                         </div>
 
                         <DialogFooter>
@@ -461,14 +527,14 @@ export default function AddressTabGHN() {
                                 <div className="flex items-start justify-between">
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-1">
-                                            <CardTitle className="text-base">{user?.fullName}</CardTitle>
+                                            <CardTitle className="text-base">{address.customerName}</CardTitle>
                                             {address.defaultAddress && (
                                                 <Badge variant="default" className="text-xs">
                                                     Mặc định
                                                 </Badge>
                                             )}
                                         </div>
-                                        <p className="text-sm text-muted-foreground">{user?.phone}</p>
+                                        <p className="text-sm text-muted-foreground">{address.phoneNumber}</p>
                                     </div>
                                     <div className="flex gap-2">
                                         <Button variant="ghost" size="icon" onClick={() => handleEdit(address)}>

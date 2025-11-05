@@ -37,7 +37,7 @@ export default function Payment() {
 
     const [voucher, setVoucher] = useState<VoucherIF[]>([]);
     const [totalVoucher, setTotalVoucher] = useState<number>(0);
-    const [selectedVoucher, setSelectedVoucher] = useState<string>("1");
+    const [selectedVoucher, setSelectedVoucher] = useState<string | null>(null);
 
     const [note, setNote] = useState("");
     const [shippingData, setShippingData] = useState<ShippingData | null>(null);
@@ -109,7 +109,7 @@ export default function Payment() {
             setLoading(true);
             const addressResponse = await AddressAPI.getAddress();
             const voucherResponse = await VoucherAPI.getVouchers();
-            setVoucher(voucherResponse.data);
+            setVoucher(voucherResponse.data.data);
             console.log("Voucher available:", voucherResponse.data);
             const loadedAddresses = addressResponse.data.data;
             setAddresses(loadedAddresses);
@@ -204,7 +204,7 @@ export default function Payment() {
                 `${selectedAddress.streetAddress} ,${selectedAddress.ward}, ${selectedAddress.district}, ${selectedAddress.province}`,
                 orderItems,
                 "BANK_TRANSFER",
-                selectedVoucher ? Number(selectedVoucher) : 0
+                selectedVoucher ? Number(selectedVoucher) : null
             );
 
             const l = await PaymentAPI.getPaymentMethods(t.data);
