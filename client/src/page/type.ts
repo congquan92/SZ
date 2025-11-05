@@ -50,3 +50,26 @@ export interface Address {
     status: string;
     defaultAddress: boolean;
 }
+
+export interface VoucherIF {
+    id: number;
+    code: string;
+    discription: string;
+    type: string;
+    discountValue: number;
+    maxDiscountValue: number;
+    minDiscountValue: number;
+    totalQuantity: number;
+    status: string;
+    startDate: string;
+    endDate: string;
+    applicableProductsId: number | null;
+    usageLimitPerUser: number;
+    userRankResponse: {
+        id: number;
+        name: string;
+        minSpent: number;
+        status: string;
+    };
+    shipping: boolean;
+}

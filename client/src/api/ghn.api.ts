@@ -69,4 +69,16 @@ export const GHNAPI = {
             throw error;
         }
     },
+    getShippingServices: async (fromDistrictId: number, toDistrictId: number): Promise<any[]> => {
+        try {
+            const response = await ghnAxios.post("/service", {
+                from_district_id: fromDistrictId,
+                to_district_id: toDistrictId,
+            });
+            return response.data.data || [];
+        } catch (error) {
+            console.error("Error fetching shipping services:", error);
+            throw error;
+        }
+    },
 };

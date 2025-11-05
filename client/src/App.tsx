@@ -14,7 +14,7 @@ import { useAuthStore } from "@/stores/useAuthStores";
 import { useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
 import Cart from "@/page/Cart";
-import Payment from "@/page/Payment";
+import Payment from "@/components/Payment";
 import Wishlist from "@/page/Wishlist";
 
 function App() {

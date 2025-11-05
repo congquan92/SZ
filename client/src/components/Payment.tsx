@@ -1,21 +1,19 @@
 import { AddressAPI } from "@/api/address.api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { formatVND } from "@/lib/helper";
-import type { Address, CartProduct } from "@/page/type";
+import type { Address, CartProduct, VoucherIF } from "@/page/type";
 import { MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
 import BreadcrumbCustom from "@/components/BreadcrumbCustom";
 import { toast } from "sonner";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/useAuthStores";
-import Voucher from "@/components/Voucher";
 import { VoucherAPI } from "@/api/voucher.api";
 
 export default function Payment() {
@@ -32,15 +30,21 @@ export default function Payment() {
 
     // Payment & voucher
     const [payment, setPayment] = useState<"cod" | "vnpay" | "momo">("cod");
-    const [voucher, setVoucher] = useState("");
-    const [couponApplied, setCouponApplied] = useState<{ code: string; discount: number } | null>(null);
+
+    const [voucher, setVoucher] = useState<VoucherIF[]>([]);
+    const [totalVoucher, setTotalVoucher] = useState<number>(0);
+    const [selectedVoucher, setSelectedVoucher] = useState<string>("");
+
     const [note, setNote] = useState("");
 
-    // Load addresses
+    // Load addresses and voucher
     const init = async () => {
         try {
             setLoading(true);
             const addressResponse = await AddressAPI.getAddress();
+            const voucherResponse = await VoucherAPI.getVouchers();
+            setVoucher(voucherResponse.data);
+            console.log("Voucher available:", voucherResponse.data);
             const loadedAddresses = addressResponse.data.data;
             setAddresses(loadedAddresses);
 
@@ -58,36 +62,51 @@ export default function Payment() {
     };
 
     useEffect(() => {
+        if (!user) {
+            toast.error("Vui lòng đăng nhập để tiếp tục thanh toán");
+            navigate("/login");
+            return;
+        }
         // Redirect to cart if no items
         if (!cartItems || cartItems.length === 0) {
             toast.error("Giỏ hàng trống");
             navigate("/cart");
             return;
         }
+
+        console.log("Cart items for payment:", cartItems);
         init();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [user]);
 
     // Get selected address
     const selectedAddress = addresses.find((a) => a.id === selectedAddressId);
 
     // Calculate totals
     const subTotal = cartItems.reduce((sum, it) => sum + it.productVariantResponse.price * it.quantity, 0);
-    const shippingFee = 0; // You can calculate based on address
-    const discount = couponApplied?.discount || 0;
-    const total = Math.max(0, subTotal + shippingFee - discount);
 
-    const applyVoucher = async () => {
-        // // TODO: Call API to validate voucher
-        // if (voucher.trim()) {
-        //     // Mock validation
-        //     setCouponApplied({ code: voucher, discount: 50000 });
-        //     toast.success("Áp dụng mã giảm giá thành công!");
-        // }
+    // Calculate  voucher
+    useEffect(() => {
+        const selectedVoucherData = voucher ? voucher.find((v) => v.code === selectedVoucher) : null;
+        if (selectedVoucherData) {
+            if (selectedVoucherData.type === "FIXED_AMOUNT" && selectedVoucherData.minDiscountValue <= subTotal) {
+                setTotalVoucher(selectedVoucherData.discountValue);
+            }
+            //  else if (selectedVoucherData.type === "PERCENTAGE") {
+            //     const discount = (subTotal * selectedVoucherData.discountValue) / 100;
+            //     if (selectedVoucherData.maxDiscountValue) {
+            //         setTotalVoucher(Math.min(discount, selectedVoucherData.maxDiscountValue));
+            //     } else {
+            //         setTotalVoucher(discount);
+            //     }
+            // }
+        } else {
+            setTotalVoucher(0);
+        }
+    }, [selectedVoucher, voucher, subTotal]);
 
-        const data = await VoucherAPI.getVouchers();
-        console.log("Vouchers:", data);
-    };
+    const shippingFee = 0; // calculate based on address
+    const total = Math.max(0, subTotal + shippingFee - totalVoucher);
 
     const placeOrder = async () => {
         if (!selectedAddress) {
@@ -232,17 +251,34 @@ export default function Payment() {
 
                             <Separator />
 
-                            <div className="flex gap-2">
-                                <Input placeholder="Nhập mã giảm giá" value={voucher} onChange={(e) => setVoucher(e.target.value)} />
-                                <Button variant="outline" onClick={applyVoucher}>
-                                    Áp dụng
-                                </Button>
-                            </div>
-                            {couponApplied && (
-                                <div className="text-xs text-green-700">
-                                    Đã áp dụng: <span className="font-medium">{couponApplied.code}</span> (−{formatVND(couponApplied.discount)})
+                            {/* VOUCHER – radio only */}
+                            <div className="space-y-2">
+                                <div className="text-base font-semibold">Ưu Đãi Dành Cho Bạn</div>
+                                <div className="relative">
+                                    <RadioGroup value={selectedVoucher} onValueChange={setSelectedVoucher} className="flex gap-4 overflow-x-auto pb-2">
+                                        {voucher.map((v: VoucherIF) => (
+                                            <label key={v.code} className="min-w-[360px]">
+                                                <Card className={`relative border-2 transition-colors cursor-pointer ${selectedVoucher === v.code ? "border-foreground" : "border-muted"}`}>
+                                                    <div className="p-4 flex gap-3 items-start">
+                                                        <RadioGroupItem value={v.code} className="mt-1" />
+                                                        <div className="flex-1">
+                                                            <div className="font-semibold">{v.code}</div>
+                                                            <div className="text-sm text-muted-foreground">
+                                                                {`Giảm ${formatVND(v.discountValue)}`}
+                                                                {" • "}Đơn từ {formatVND(v.minDiscountValue)}
+                                                            </div>
+
+                                                            <div className="text-xs text-muted-foreground mt-1">HSD: {new Date(v.endDate).toLocaleDateString("vi-VN")}</div>
+                                                        </div>
+                                                    </div>
+                                                </Card>
+                                            </label>
+                                        ))}
+                                        {voucher.length === 0 && <div className="text-sm text-muted-foreground py-2">Không có voucher khả dụng</div>}
+                                    </RadioGroup>
                                 </div>
-                            )}
+                                <Separator />
+                            </div>
 
                             <div className="space-y-1 pt-2 text-sm">
                                 <div className="flex justify-between">
@@ -250,13 +286,16 @@ export default function Payment() {
                                     <span>{formatVND(subTotal)}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span>Phí vận chuyển</span>
-                                    <span>{shippingFee === 0 ? "—" : formatVND(shippingFee)}</span>
+                                    <span>Giảm giá voucher : </span>
+                                    <span>{formatVND(totalVoucher)}</span>
                                 </div>
+
                                 <div className="flex justify-between">
-                                    <span>Giảm giá</span>
-                                    <span className="text-green-700">−{formatVND(discount)}</span>
+                                    <span>Phí vận chuyển</span>
+                                    <span>{formatVND(shippingFee)}</span>
+                                    {/* <span>{t}</span> */}
                                 </div>
+
                                 <Separator />
                                 <div className="flex justify-between text-base font-semibold">
                                     <span>Tổng thanh toán</span>
