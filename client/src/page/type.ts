@@ -53,7 +53,6 @@ export interface Address {
 
 export interface VoucherIF {
     id: number;
-    code: string;
     discription: string;
     type: string;
     discountValue: number;
@@ -72,4 +71,20 @@ export interface VoucherIF {
         status: string;
     };
     shipping: boolean;
+}
+
+export interface ShippingData {
+    serviceTypeId: number;
+    weightTotal: number;
+    lengthTotal: number;
+    widthTotal: number;
+    heightTotal: number;
+    itemResponses: Array<{
+        name: string;
+        length: number;
+        width: number;
+        height: number;
+        weight: number;
+        quantity: number;
+    }>;
 }

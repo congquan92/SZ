@@ -3,6 +3,8 @@ import axios from "axios";
 // GHN API base URL
 const GHN_API_URL = "https://online-gateway.ghn.vn/shiip/public-api/master-data";
 
+// ship url
+
 const GHN_TOKEN = import.meta.env.VITE_GHN_TOKEN;
 
 // Create axios instance for GHN

@@ -30,16 +30,16 @@ export default function Cart() {
             // Sync with cart store
             fetchCart();
         } catch (error) {
-            if (!user) {
-                toast.error("Vui lòng đăng nhập để xem giỏ hàng", {
-                    duration: 5000,
-                    action: {
-                        label: "Đăng nhập ngay",
-                        onClick: () => navigate("/login"),
-                    },
-                });
-                return;
-            }
+            // if (!user) {
+            //     toast.error("Vui lòng đăng nhập để xem giỏ hàng", {
+            //         duration: 5000,
+            //         action: {
+            //             label: "Đăng nhập ngay",
+            //             onClick: () => navigate("/login"),
+            //         },
+            //     });
+            //     return;
+            // }
             console.error("Error fetching cart:", error);
             toast.error("Không thể tải thông tin giỏ hàng");
         } finally {
@@ -48,9 +48,14 @@ export default function Cart() {
     };
 
     useEffect(() => {
+        if (!user) {
+            navigate("/login");
+            return;
+        }
+
         init();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [user]);
 
     // Calculate totals
     const subTotal = cartItems.reduce((sum, it) => sum + it.productVariantResponse.price * it.quantity, 0);

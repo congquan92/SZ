@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { formatVND } from "@/lib/helper";
-import type { Address, CartProduct, VoucherIF } from "@/page/type";
+import type { Address, CartProduct, VoucherIF, ShippingData } from "@/page/type";
 import { MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
 import BreadcrumbCustom from "@/components/BreadcrumbCustom";
@@ -16,6 +16,8 @@ import { toast } from "sonner";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/useAuthStores";
 import { VoucherAPI } from "@/api/voucher.api";
+import { OrderAPI } from "@/api/order.api";
+import { PaymentAPI } from "@/api/payment.api";
 
 export default function Payment() {
     const location = useLocation();
@@ -35,9 +37,71 @@ export default function Payment() {
 
     const [voucher, setVoucher] = useState<VoucherIF[]>([]);
     const [totalVoucher, setTotalVoucher] = useState<number>(0);
-    const [selectedVoucher, setSelectedVoucher] = useState<string>("");
+    const [selectedVoucher, setSelectedVoucher] = useState<string>("1");
 
     const [note, setNote] = useState("");
+    const [shippingData, setShippingData] = useState<ShippingData | null>(null);
+    const [shippingFee, setShippingFee] = useState<number>(0);
+
+    const [orderItems, setOrderItems] = useState<Array<{ quantity: number; productVariantId: number }>>([]);
+
+    useEffect(() => {
+        const fetchShippingFee = async () => {
+            try {
+                const tempItems = cartItems.map((it) => {
+                    const prod = it.productBaseResponse;
+                    const varr = it.productVariantResponse;
+                    return {
+                        nameProduct: prod.name,
+                        length: varr.length || 0,
+                        width: varr.width || 0,
+                        height: varr.height || 0,
+                        weight: varr.weight || 0,
+                        quantity: it.quantity,
+                    };
+                });
+                setOrderItems(cartItems.map((it) => ({ quantity: it.quantity, productVariantId: it.productVariantResponse.id })));
+
+                console.log("Items for shipping fee calculation:", tempItems);
+                const dataShipfee = await OrderAPI.estimateDimensions(tempItems);
+                setShippingData(dataShipfee.data);
+                console.log("Calculated shipping fee data:", dataShipfee);
+            } catch (error) {
+                console.error("Error calculating shipping fee:", error);
+            }
+        };
+
+        if (cartItems.length > 0) {
+            fetchShippingFee();
+        }
+    }, [cartItems]);
+
+    useEffect(() => {
+        const selectedAddress = addresses.find((a) => a.id === selectedAddressId);
+
+        const calculateShippingFee = async () => {
+            if (!shippingData || !selectedAddress) return;
+
+            try {
+                const response = await OrderAPI.caculateShippingFee({
+                    toDistrictId: selectedAddress?.districtId || 0,
+                    toWardCode: selectedAddress?.wardId.toString() || "",
+                    serviceTypeId: shippingData.serviceTypeId,
+                    weight: shippingData.weightTotal,
+                    length: shippingData.lengthTotal,
+                    width: shippingData.widthTotal,
+                    height: shippingData.heightTotal,
+                    items: shippingData.itemResponses,
+                });
+                console.log("Shipping fee response:", response);
+                setShippingFee(response.data.total);
+            } catch (error) {
+                console.error("Error calculating shipping fee:", error);
+            }
+        };
+
+        calculateShippingFee();
+    }, [shippingData, selectedAddressId, addresses]);
 
     // Load addresses and voucher
     const init = async () => {
@@ -64,10 +128,10 @@ export default function Payment() {
     };
 
     useEffect(() => {
-        if (!user) {
-            navigate("/login");
-            return;
-        }
+        // if (!user) {
+        //     navigate("/login");
+        //     return;
+        // }
         // Redirect to cart if no items
         if (!cartItems || cartItems.length === 0) {
             toast.error("Giỏ hàng trống");
@@ -78,7 +142,7 @@ export default function Payment() {
         console.log("Cart items for payment:", cartItems);
         init();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user]);
+    }, []);
 
     // Get selected address
     const selectedAddress = addresses.find((a) => a.id === selectedAddressId);
@@ -88,48 +152,71 @@ export default function Payment() {
 
     // Calculate  voucher
     useEffect(() => {
-        const selectedVoucherData = voucher ? voucher.find((v) => v.code === selectedVoucher) : null;
+        const selectedVoucherData = voucher ? voucher.find((v) => v.id === Number(selectedVoucher)) : null;
         if (selectedVoucherData) {
             if (selectedVoucherData.type === "FIXED_AMOUNT" && selectedVoucherData.minDiscountValue <= subTotal) {
                 setTotalVoucher(selectedVoucherData.discountValue);
+            } else if (selectedVoucherData.type === "PERCENTAGE") {
+                const discount = (subTotal * selectedVoucherData.discountValue) / 100;
+                if (selectedVoucherData.maxDiscountValue) {
+                    setTotalVoucher(Math.min(discount, selectedVoucherData.maxDiscountValue));
+                } else {
+                    setTotalVoucher(discount);
+                }
             }
-            //  else if (selectedVoucherData.type === "PERCENTAGE") {
-            //     const discount = (subTotal * selectedVoucherData.discountValue) / 100;
-            //     if (selectedVoucherData.maxDiscountValue) {
-            //         setTotalVoucher(Math.min(discount, selectedVoucherData.maxDiscountValue));
-            //     } else {
-            //         setTotalVoucher(discount);
-            //     }
-            // }
         } else {
             setTotalVoucher(0);
         }
     }, [selectedVoucher, voucher, subTotal]);
 
-    const shippingFee = 0; // calculate based on address
     const total = Math.max(0, subTotal + shippingFee - totalVoucher);
 
     const placeOrder = async () => {
-        if (!selectedAddress) {
-            toast.error("Vui lòng chọn địa chỉ giao hàng");
-            return;
-        }
+        try {
+            if (!selectedAddress) {
+                toast.error("Vui lòng chọn địa chỉ giao hàng");
+                return;
+            }
 
-        if (cartItems.length === 0) {
-            toast.error("Giỏ hàng trống");
-            return;
-        }
+            if (cartItems.length === 0) {
+                toast.error("Giỏ hàng trống");
+                return;
+            }
 
-        // TODO: Call API to place order
-        console.log("Placing order:", {
-            cartItems,
-            address: selectedAddress,
-            note,
-            payment,
-            total,
-        });
-        toast.success("Đặt hàng thành công!");
-        // navigate("/order-success");
+            // TODO: Call API to place order
+            console.log("Placing order:", {
+                cartItems,
+                address: selectedAddress,
+                note,
+                payment,
+                total,
+            });
+
+            const t = await OrderAPI.orderAdd(
+                user?.fullName || "",
+                user?.phone || "",
+                selectedAddress.ward || "",
+                selectedAddress.wardId.toString(),
+                selectedAddress.districtId,
+                selectedAddress.provinceId,
+                selectedAddress.district || "",
+                selectedAddress.province || "",
+                `${selectedAddress.streetAddress} ,${selectedAddress.ward}, ${selectedAddress.district}, ${selectedAddress.province}`,
+                orderItems,
+                "BANK_TRANSFER",
+                selectedVoucher ? Number(selectedVoucher) : 0
+            );
+
+            const l = await PaymentAPI.getPaymentMethods(t.data);
+            toast.success("Đặt hàng thành công!");
+
+            // navigate("/");
+            window.location.href = l.data;
+            console.log("Payment redirect link:", l.data);
+        } catch (error) {
+            console.error("Error placing order:", error);
+            toast.error("Đặt hàng thất bại");
+        }
     };
 
     return (
@@ -309,16 +396,12 @@ export default function Payment() {
                                 <div className="relative">
                                     <RadioGroup value={selectedVoucher} onValueChange={setSelectedVoucher} className="flex gap-4 overflow-x-auto pb-2">
                                         {voucher.map((v: VoucherIF) => (
-                                            <label key={v.code} className="min-w-[360px]">
-                                                <Card className={`relative border-2 transition-colors cursor-pointer ${selectedVoucher === v.code ? "border-foreground" : "border-muted"}`}>
+                                            <label key={v.id} className="min-w-[360px]">
+                                                <Card className={`relative border-2 transition-colors cursor-pointer ${selectedVoucher === v.id.toString() ? "border-foreground" : "border-muted"}`}>
                                                     <div className="p-4 flex gap-3 items-start">
-                                                        <RadioGroupItem value={v.code} className="mt-1" />
+                                                        <RadioGroupItem value={v.id.toString()} className="mt-1" />
                                                         <div className="flex-1">
-                                                            <div className="font-semibold">{v.code}</div>
-                                                            <div className="text-sm text-muted-foreground">
-                                                                {`Giảm ${formatVND(v.discountValue)}`}
-                                                                {" • "}Đơn từ {formatVND(v.minDiscountValue)}
-                                                            </div>
+                                                            <div className="text-sm">{v.discription}</div>
 
                                                             <div className="text-xs text-muted-foreground mt-1">HSD: {new Date(v.endDate).toLocaleDateString("vi-VN")}</div>
                                                         </div>
@@ -339,7 +422,7 @@ export default function Payment() {
                                 </div>
                                 <div className="flex justify-between">
                                     <span>Giảm giá voucher : </span>
-                                    <span>{formatVND(totalVoucher)}</span>
+                                    <span>-{formatVND(totalVoucher)}</span>
                                 </div>
 
                                 <div className="flex justify-between">

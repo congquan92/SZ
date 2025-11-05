@@ -10,14 +10,12 @@ export const OrderAPI = {
         deliveryDistrictName: string,
         deliveryProvinceName: string,
         deliveryAddress: string,
-        serviceDeliveryId: number,
-        serviceDeliveryName: string,
         orderItems: Array<{ quantity: number; productVariantId: number }>,
         paymentType: string,
         voucherId: number
     ) => {
         try {
-            const response = await axiosInstance.post(`/order/add`, {
+            const response = await axiosInstance.post(`/orders/add`, {
                 customerName,
                 customerPhone,
                 deliveryWardName,
@@ -27,8 +25,6 @@ export const OrderAPI = {
                 deliveryDistrictName,
                 deliveryProvinceName,
                 deliveryAddress,
-                serviceDeliveryId,
-                serviceDeliveryName,
                 orderItems,
                 paymentType,
                 voucherId,
@@ -36,6 +32,34 @@ export const OrderAPI = {
             return response.data;
         } catch (error) {
             console.error("Place order failed", error);
+            throw error;
+        }
+    },
+
+    estimateDimensions: async (items: { nameProduct: string; length: number; width: number; height: number; weight: number; quantity: number }[]) => {
+        try {
+            const response = await axiosInstance.post("/api/shipping/estimate-dimensions", items);
+            return response.data;
+        } catch (error) {
+            console.error("Calculate shipping fee failed:", error);
+            throw error;
+        }
+    },
+    caculateShippingFee: async (items: {
+        toDistrictId: number;
+        toWardCode: string;
+        serviceTypeId: number;
+        weight: number;
+        length: number;
+        width: number;
+        height: number;
+        items: Array<{ name: string; length: number; width: number; height: number; weight: number; quantity: number }>;
+    }) => {
+        try {
+            const response = await axiosInstance.post("/api/shipping/fee", items);
+            return response.data;
+        } catch (error) {
+            console.error("Calculate shipping fee failed:", error);
             throw error;
         }
     },
