@@ -178,7 +178,7 @@ export default function ProductDialog({ open, onClose, product }: Props) {
                         )}
                     </Carousel>
                     {images.length > 1 && (
-                        <div className="mt-4 flex gap-2 overflow-x-auto pb-1" role="tablist">
+                        <div className="mt-3 flex gap-2 overflow-x-auto p-2" role="tablist">
                             {images.map((src, i) => (
                                 <button
                                     key={`thumb-${src}-${i}`}
@@ -247,21 +247,28 @@ export default function ProductDialog({ open, onClose, product }: Props) {
                         </div>
                     )}
                     <div className="flex flex-row items-center gap-3 pt-2">
-                        <div className="flex items-center rounded-md border" role="group">
-                            <Button type="button" variant="ghost" size="icon" className="rounded-r-none h-10" onClick={() => setQty((q) => Math.max(1, q - 1))} disabled={qty <= 1}>
-                                –
-                            </Button>
-                            <input type="number" min={1} max={maxQty} value={qty} onChange={(e) => handleQuantityChange(Number(e.target.value), maxQty)} className="w-16 text-center h-10 border-y outline-none bg-transparent" />
-                            <Button type="button" variant="ghost" size="icon" className="rounded-l-none h-10" onClick={() => setQty((q) => Math.min(maxQty, q + 1))} disabled={qty >= maxQty}>
-                                +
-                            </Button>
+                        <div className="flex justify-start flex-col gap-3">
+                            <div className="flex flex-row items-center gap-3">
+                                <p className="text-sm font-medium">Số lượng:</p>
+                                <div className="flex items-center rounded-md border" role="group">
+                                    <Button type="button" variant="ghost" size="icon" className="rounded-r-none h-10" onClick={() => setQty((q) => Math.max(1, q - 1))} disabled={qty <= 1}>
+                                        –
+                                    </Button>
+                                    <input type="number" min={1} max={maxQty} value={qty} onChange={(e) => handleQuantityChange(Number(e.target.value), maxQty)} className="w-16 text-center h-10 border-y outline-none bg-transparent" />
+                                    <Button type="button" variant="ghost" size="icon" className="rounded-l-none h-10" onClick={() => setQty((q) => Math.min(maxQty, q + 1))} disabled={qty >= maxQty}>
+                                        +
+                                    </Button>
+                                </div>
+                            </div>
+                            <div className="flex flex-col sm:flex-row gap-3 w-full">
+                                <Button className="flex-1 w-full sm:w-auto h-10" disabled={!variant || !inStock} onClick={handleAddToCart}>
+                                    <ShoppingCart /> {variant ? "Thêm vào giỏ hàng" : "Vui lòng chọn phân loại"}
+                                </Button>
+                                <Button className="flex-1 w-full sm:w-auto h-10">
+                                    <CircleDollarSign /> Mua ngay
+                                </Button>
+                            </div>
                         </div>
-                        <Button className="flex-1 w-full sm:w-auto h-10" disabled={!variant || !inStock} onClick={handleAddToCart}>
-                            <ShoppingCart /> {variant ? "Thêm vào giỏ hàng" : "Vui lòng chọn phân loại"}
-                        </Button>
-                        <Button className="flex-1 w-full sm:w-auto h-10">
-                            <CircleDollarSign /> Mua ngay
-                        </Button>
                     </div>
                     <Separator />
                     <Button variant="link" className="w-full" asChild>

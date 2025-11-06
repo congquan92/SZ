@@ -188,13 +188,13 @@ export default function Payment() {
                 return;
             }
 
-            console.log("Placing order:", {
-                cartItems,
-                address: selectedAddress,
-                note,
-                payment,
-                total,
-            });
+            // console.log("Placing order:", {
+            //     cartItems,
+            //     address: selectedAddress,
+            //     note,
+            //     payment,
+            //     total,
+            // });
 
             // Tạo đơn hàng
             const orderResponse = await OrderAPI.orderAdd(
@@ -216,11 +216,11 @@ export default function Payment() {
             // Lấy link thanh toán
             const paymentResponse = await PaymentAPI.getPaymentMethods(orderResponse.data);
 
-            // Xóa giỏ hàng sau khi đặt hàng thành công
+            // Xóa giỏ hàng cả khi đặt thành công hay không thành công
             clearCart();
             cartItems.map((item) => removeItem(item.id)); // Xóa từng item để đồng bộ với backend
-            console.log("Payment redirect link:", paymentResponse.data);
 
+            // console.log("Payment redirect link:", paymentResponse.data);
             // Redirect đến trang thanh toán
             window.location.href = paymentResponse.data;
         } catch (error) {
@@ -323,14 +323,14 @@ export default function Payment() {
                                                             <RadioGroupItem value={addr.id.toString()} id={`addr-${addr.id}`} className="mt-1" />
                                                             <div className="flex-1">
                                                                 <div className="flex items-center gap-2 mb-1">
-                                                                    <p className="font-medium">{user?.fullName}</p>
+                                                                    <p className="font-medium">{addr.customerName}</p>
                                                                     {addr.defaultAddress && (
                                                                         <Badge variant="default" className="text-xs">
                                                                             Mặc định
                                                                         </Badge>
                                                                     )}
                                                                 </div>
-                                                                <p className="text-sm text-muted-foreground mb-2">{user?.phone}</p>
+                                                                <p className="text-sm text-muted-foreground mb-2">{addr.phoneNumber}</p>
                                                                 <p className="text-sm">{addr.streetAddress}</p>
                                                                 <p className="text-sm text-muted-foreground">
                                                                     {addr.ward}, {addr.district}, {addr.province}
@@ -359,14 +359,14 @@ export default function Payment() {
                                     <div className="flex items-start justify-between">
                                         <div className="flex-1">
                                             <div className="flex items-center gap-2 mb-1">
-                                                <p className="font-medium">{user?.fullName}</p>
+                                                <p className="font-medium">{selectedAddress.customerName}</p>
                                                 {selectedAddress.defaultAddress && (
                                                     <Badge variant="default" className="text-xs">
                                                         Mặc định
                                                     </Badge>
                                                 )}
                                             </div>
-                                            <p className="text-sm text-muted-foreground">{user?.phone}</p>
+                                            <p className="text-sm text-muted-foreground">{selectedAddress.phoneNumber}</p>
                                         </div>
                                     </div>
                                     <Separator />

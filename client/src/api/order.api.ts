@@ -46,4 +46,14 @@ export const OrderAPI = {
             throw error;
         }
     },
+
+    cancelOrder: async (orderId: number) => {
+        try {
+            const response = await axiosInstance.delete(`orders/cancel?orderId=${orderId}`);
+            return response.data;
+        } catch (error) {
+            console.error("Cancel order failed", error);
+            throw error;
+        }
+    },
 };

@@ -90,3 +90,52 @@ export interface ShippingData {
         quantity: number;
     }>;
 }
+
+// ---------------------------Order -----------------------
+interface OrderItemResponse {
+    orderItemId: number;
+    finalPrice: number;
+    listPriceSnapShot: number;
+    nameProductSnapShot: string;
+    quantity: number;
+    returnQuantity: number;
+    urlImageSnapShot: string;
+    variantSnapShot: string;
+    productVariantResponse: {
+        id: number;
+        weight: number;
+        length: number;
+        width: number;
+        height: number;
+        price: number;
+        quantity: number;
+        sku: string;
+        variantAttributes: Array<{
+            id: number;
+            attribute: string;
+            value: string;
+        }>;
+    };
+}
+
+export type DeliveryStatus = "CANCELLED" | "COMPLETED" | "CONFIRMED" | "DELIVERED" | "PACKED" | "PENDING" | "REFUNDED" | "SHIPPED";
+export interface OrderItem {
+    id: number;
+    customerName: string;
+    customerPhone: string;
+    deliveryAddress: string;
+    deliveryDistrictId: number;
+    deliveryDistrictName: string;
+    deliveryProvinceId: number;
+    deliveryProvinceName: string;
+    deliveryStatus: DeliveryStatus;
+    deliveryWardCode: string;
+    deliveryWardName: string;
+    note: string;
+    orderItemResponses: OrderItemResponse[];
+    orderTrackingCode: string | null;
+    originalOrderAmount: number;
+    paymentStatus: "PAID" | "UNPAID" | "REFUNDED";
+    paymentType: "BANK_TRANSFER" | "CASH" | "QR_CODE";
+    totalAmount: number;
+}
