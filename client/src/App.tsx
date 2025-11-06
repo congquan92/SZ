@@ -17,6 +17,7 @@ import Cart from "@/page/Cart";
 import Payment from "@/page/Payment";
 import Wishlist from "@/page/Wishlist";
 import PaymentStatus from "@/page/PaymentStatus";
+import UnauthorizedAccess from "@/page/UnauthorizedAccess";
 
 function App() {
     const { fetchUser, token, user, loading } = useAuthStore();
@@ -53,6 +54,7 @@ function App() {
         { path: "/payment", element: <Payment /> },
         { path: "/wishlist", element: <Wishlist /> },
         { path: "/payment/vnpay-return", element: <PaymentStatus /> },
+        { path: "/unauthorized", element: <UnauthorizedAccess /> },
         { path: "/*", element: <NotFound_404 /> },
     ];
 
