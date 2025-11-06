@@ -37,4 +37,13 @@ export const OrderAPI = {
             throw error;
         }
     },
+    getOrderAll: async () => {
+        try {
+            const response = await axiosInstance.get(`orders/list?isAll=true`);
+            return response.data;
+        } catch (error) {
+            console.error("Get order failed", error);
+            throw error;
+        }
+    },
 };
