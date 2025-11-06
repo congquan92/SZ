@@ -56,7 +56,7 @@ export default function UnauthorizedAccess() {
                 {Array.from({ length: 220 }).map((_, i) => (
                     <span
                         key={i}
-                        className="absolute w-[1px] bg-white/40 blur-[0.5px] animate-scan-fast"
+                        className="absolute w-px bg-white/40 blur-[0.5px] animate-scan-fast"
                         style={{
                             height: `${40 + Math.random() * 80}px`,
                             left: `${Math.random() * 100}%`,
@@ -68,7 +68,7 @@ export default function UnauthorizedAccess() {
                     />
                 ))}
                 {/* quét sáng ngang */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-glow" />
+                <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent animate-glow" />
                 {/* static noise nhẹ */}
                 <div className="absolute inset-0 mix-blend-screen opacity-[0.07] noise" />
             </div>
@@ -115,7 +115,7 @@ export default function UnauthorizedAccess() {
                             <span className="ml-auto">{Math.round(progress)}%</span>
                         </div>
                         <div className="h-2 w-full rounded bg-red-900/50 overflow-hidden">
-                            <div className="h-full bg-gradient-to-r from-red-500 via-red-400 to-red-600 animate-stripe" style={{ width: `${progress}%` }} />
+                            <div className="h-full bg-linear-to-r from-red-500 via-red-400 to-red-600 animate-stripe" style={{ width: `${progress}%` }} />
                         </div>
                     </div>
                 </div>

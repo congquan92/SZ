@@ -19,6 +19,7 @@ import { useCartStore } from "@/stores/useCartStore";
 import { VoucherAPI } from "@/api/voucher.api";
 import { OrderAPI } from "@/api/order.api";
 import { PaymentAPI } from "@/api/payment.api";
+import { ShippingAPI } from "@/api/shipping.api";
 
 export default function Payment() {
     const navigate = useNavigate();
@@ -104,7 +105,7 @@ export default function Payment() {
                 setOrderItems(cartItems.map((it: CartProduct) => ({ quantity: it.quantity, productVariantId: it.productVariantResponse.id })));
 
                 console.log("Items for shipping fee calculation:", tempItems);
-                const dataShipfee = await OrderAPI.estimateDimensions(tempItems);
+                const dataShipfee = await ShippingAPI.estimateDimensions(tempItems);
 
                 setShippingData(dataShipfee.data);
                 console.log("Calculated shipping fee data:", dataShipfee);
@@ -125,7 +126,7 @@ export default function Payment() {
             if (!shippingData || !selectedAddress) return;
 
             try {
-                const response = await OrderAPI.caculateShippingFee({
+                const response = await ShippingAPI.caculateShippingFee({
                     toDistrictId: selectedAddress?.districtId,
                     toWardCode: selectedAddress?.wardId,
                     serviceTypeId: shippingData.serviceTypeId,
