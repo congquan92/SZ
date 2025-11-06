@@ -12,6 +12,7 @@ export const OrderAPI = {
         deliveryAddress: string,
         orderItems: Array<{ quantity: number; productVariantId: number }>,
         paymentType: string,
+        note: string,
         voucherId: number | null
     ) => {
         try {
@@ -27,6 +28,7 @@ export const OrderAPI = {
                 deliveryAddress,
                 orderItems,
                 paymentType,
+                note,
                 voucherId,
             });
             return response.data;

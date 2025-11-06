@@ -25,7 +25,7 @@ export default function Payment() {
     const { user } = useAuthStore();
 
     // Lấy cart items
-    const { cartItems, fetchCart, clearCart, cartCount } = useCartStore();
+    const { cartItems, fetchCart, clearCart, cartCount, removeItem } = useCartStore();
 
     // Address
     const [addresses, setAddresses] = useState<Address[]>([]);
@@ -208,6 +208,7 @@ export default function Payment() {
                 `${selectedAddress.streetAddress}, ${selectedAddress.ward}, ${selectedAddress.district}, ${selectedAddress.province}`,
                 orderItems,
                 payment,
+                note,
                 selectedVoucher ? Number(selectedVoucher) : null
             );
 
@@ -216,8 +217,7 @@ export default function Payment() {
 
             // Xóa giỏ hàng sau khi đặt hàng thành công
             clearCart();
-
-            toast.success("Đặt hàng thành công!");
+            cartItems.map((item) => removeItem(item.id)); // Xóa từng item để đồng bộ với backend
             console.log("Payment redirect link:", paymentResponse.data);
 
             // Redirect đến trang thanh toán
