@@ -50,12 +50,16 @@ export interface ProductDetail {
 }
 
 // review type
-// export interface Review {
-//     id: number;
-//     orderItemId: number;
-//     rating: number;
-//     comment: string;
-//     imageUrl: string[];
-//     createdAt: string;
-//     updatedAt: string;
-// }
+export interface Review {
+    avatarUser: string;
+    comment: string;
+    fullName: string;
+    id: string;
+    images: string[];
+    productId: number;
+    rating: number;
+    status: string;
+    userId: number;
+    createdAt: string;
+    updatedAt: string;
+}

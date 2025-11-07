@@ -25,13 +25,15 @@ export default function Product() {
     const [isLoading, setIsLoading] = useState(false);
     const [sortOrder, setSortOrder] = useState<string>("default");
 
-    const initProducts = async (size: number = 20) => {
+    const initProducts = async (page: number = 0, size: number = 20) => {
         setIsLoading(true);
         try {
-            const { data } = await ProductAPI.getProduct(size);
+            const response = await ProductAPI.getProduct(size, page);
+            const data = response.data;
             setOriginalProducts(data.data);
             setProducts(data.data);
             setTotalPages(data.totalPages);
+            // console.log("Products loaded:", data);
         } catch (error) {
             console.error("Failed to load products:", error);
             toast.error("Không thể tải danh sách sản phẩm");
@@ -41,7 +43,7 @@ export default function Product() {
     };
 
     useEffect(() => {
-        initProducts(pageSize);
+        initProducts(currentPage, pageSize);
     }, [currentPage, pageSize]);
 
     // Xử lý sắp xếp sản phẩm

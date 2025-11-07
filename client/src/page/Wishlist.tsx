@@ -111,69 +111,63 @@ export default function Wishlist() {
                 </div>
 
                 {favorites.length > 0 && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-2">
                         {favorites.map((item) => {
                             const discount = calculateDiscountPercent(item.listPrice, item.salePrice);
                             const isRemoving = removingIds.has(item.id);
 
                             return (
-                                <Card key={item.id} className="group overflow-hidden rounded-none hover:shadow-lg transition-all duration-300 ">
-                                    <CardContent className="p-0">
-                                        {/* Image Section */}
+                                <Card key={item.id} className="group p-0 shadow-none rounded-none cursor-pointer gap-0">
+                                    <CardContent className="relative p-2">
+                                        <Badge className="absolute top-2 left-2 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-none font-medium z-10">{discount}%</Badge>
                                         <Link to={`/product/${item.id}`}>
-                                            <div className="relative aspect-square overflow-hidden bg-muted">
-                                                <img src={item.urlCoverImage} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-
-                                                {/* Discount Badge */}
-                                                {discount > 0 && <Badge className="absolute top-2 left-2 bg-red-500 hover:bg-red-600">-{discount}%</Badge>}
-                                            </div>
+                                            <img src={item.urlCoverImage} alt={item.name} className="object-cover w-full max-h-[250px] transition-transform duration-500 group-hover:scale-105" loading="lazy" />
                                         </Link>
-
-                                        {/* Content Section */}
-                                        <div className="p-4 space-y-3">
-                                            <Link to={`/product/${item.id}`}>
-                                                <h3 className="font-medium text-sm line-clamp-2 hover:text-primary transition-colors min-h-10">{item.name}</h3>
-                                            </Link>
-
-                                            {/* Rating & Sold */}
-                                            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                                                <div className="flex items-center gap-1">
-                                                    <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                                                    <span>{item.avgRating.toFixed(1)}</span>
-                                                </div>
-                                                <span>•</span>
-                                                <span>Đã bán {item.soldQuantity}</span>
-                                            </div>
-
-                                            {/* Price Section */}
-                                            <div className="space-y-1">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-lg font-bold text-primary">{formatVND(item.salePrice)}</span>
-                                                    {discount > 0 && <span className="text-xs text-muted-foreground line-through">{formatVND(item.listPrice)}</span>}
-                                                </div>
-                                            </div>
-
-                                            {/* Action Buttons */}
-                                            <div className="flex gap-2 pt-2">
-                                                <Button size="sm" variant="outline" className="flex-1" onClick={() => handleRemoveFavorite(item.id)} disabled={isRemoving}>
-                                                    {isRemoving ? (
-                                                        <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
-                                                    ) : (
-                                                        <>
-                                                            <Trash2 className="h-4 w-4 mr-1" />
-                                                            Xóa
-                                                        </>
-                                                    )}
+                                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                            <Button
+                                                size="sm"
+                                                variant="secondary"
+                                                className="bg-white/90 text-gray-900 hover:bg-white text-xs px-3 py-1.5 rounded-none cursor-pointer backdrop-blur-sm"
+                                                onClick={() => handleRemoveFavorite(item.id)}
+                                                disabled={isRemoving}
+                                            >
+                                                {isRemoving ? (
+                                                    <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+                                                ) : (
+                                                    <>
+                                                        <Trash2 className="h-4 w-4" /> Xóa
+                                                    </>
+                                                )}
+                                            </Button>
+                                            <Link to={`/product/${item.id}`} className="mx-2">
+                                                <Button size="sm" variant="secondary" className="bg-white/90 text-gray-900 hover:bg-white text-xs px-3 py-1.5 rounded-none cursor-pointer backdrop-blur-sm">
+                                                    <ShoppingCart /> Mua ngay
                                                 </Button>
-                                                <Link to={`/product/${item.id}`} className="flex-1">
-                                                    <Button size="sm" className="w-full">
-                                                        <ShoppingCart className="h-4 w-4 mr-1" />
-                                                        Mua
-                                                    </Button>
-                                                </Link>
-                                            </div>
+                                            </Link>
                                         </div>
                                     </CardContent>
+                                    <div className="flex flex-col gap-2 p-3 items-start">
+                                        <div className="flex flex-col gap-1">
+                                            <Link to={`/product/${item.id}`} className="text-l font-medium text-gray-700 line-clamp-2 hover:underline">
+                                                {item.name}
+                                            </Link>
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex items-center">
+                                                    {[...Array(5)].map((_, i) => (
+                                                        <Star key={i} className={`h-4 w-4 ${i < Math.floor(item.avgRating) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`} />
+                                                    ))}
+                                                </div>
+                                                <Badge className="bg-yellow-100 text-yellow-800 text-xs px-1.5 py-0.5 rounded-none font-medium">{item.avgRating} Đánh giá</Badge>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center justify-between w-full">
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-gray-500 text-xs line-through">{formatVND(item.listPrice)}</span>
+                                                <span className="text-lg font-semibold text-gray-900">{formatVND(item.salePrice)}</span>
+                                            </div>
+                                            <Badge className="bg-green-100 text-green-800 text-xs px-1.5 py-0.5 rounded-none font-medium">{item.soldQuantity} Đã Bán</Badge>
+                                        </div>
+                                    </div>
                                 </Card>
                             );
                         })}

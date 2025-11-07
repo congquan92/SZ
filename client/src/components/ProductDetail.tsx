@@ -17,9 +17,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Title from "@/components/Title";
+import { ReviewAPI } from "@/api/review.api";
 
 export default function ProductDetail() {
     const { id, slug } = useParams();
+    const [reviews, setReviews] = useState([]);
     const [product, setProduct] = useState<ProductDetailType | null>(null);
     const [carouselApi, setCarouselApi] = useState<CarouselApi>();
     const [currentSlide, setCurrentSlide] = useState(0);
@@ -33,9 +35,21 @@ export default function ProductDetail() {
         try {
             const data = await ProductAPI.getProductById(Number(id));
             setProduct(data.data);
+            console.log("product detail:", data.data);
         } catch (error) {
             console.error("Failed to load product detail:", error);
             setProduct(null);
+        }
+    }, [id]);
+
+    const initReviews = useCallback(async () => {
+        try {
+            const data_review = await ReviewAPI.getReviewProductsById(Number(id));
+            setReviews(data_review.data);
+            console.log("review:", data_review.data);
+        } catch (error) {
+            console.error("Failed to load reviews:", error);
+            setReviews([]);
         }
     }, [id]);
 
@@ -53,7 +67,8 @@ export default function ProductDetail() {
 
     useEffect(() => {
         initProductDetail();
-    }, [initProductDetail]);
+        initReviews();
+    }, [initProductDetail, initReviews]);
 
     // Reset state khi product thay đổi
     useEffect(() => {
