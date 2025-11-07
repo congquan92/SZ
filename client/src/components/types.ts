@@ -48,3 +48,14 @@ export interface ProductDetail {
     createAt: string;
     updateAt: string;
 }
+
+// review type
+// export interface Review {
+//     id: number;
+//     orderItemId: number;
+//     rating: number;
+//     comment: string;
+//     imageUrl: string[];
+//     createdAt: string;
+//     updatedAt: string;
+// }

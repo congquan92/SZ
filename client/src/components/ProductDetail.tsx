@@ -9,10 +9,14 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { CircleDollarSign, ShoppingCart } from "lucide-react";
+import { CircleDollarSign, ShoppingCart, Star, FileText } from "lucide-react";
 import { CartAPI } from "@/api/cart.api";
 import { useCartStore } from "@/stores/useCartStore";
 import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Title from "@/components/Title";
 
 export default function ProductDetail() {
     const { id, slug } = useParams();
@@ -217,7 +221,7 @@ export default function ProductDetail() {
                 </div>
 
                 {/* RIGHT */}
-                <div className="p-5 md:p-6 space-y-4 overflow-y-auto max-h-[80vh]">
+                <div className="p-5 md:p-6 space-y-4 max-h-[80vh]">
                     <div className="space-y-2">
                         <h1 className="text-xl md:text-2xl font-semibold leading-tight">{product?.name}</h1>
                         {product && <p className="text-sm text-muted-foreground line-clamp-2">{product.description}</p>}
@@ -321,8 +325,166 @@ export default function ProductDetail() {
                 </div>
             </div>
 
-            {/* mô tả/spare */}
-            <div className="mt-4 text-sm text-muted-foreground">sadad{/* thêm content nếu cần */}</div>
+            {/* Tabs: Mô tả, Đánh giá & Bình luận */}
+            <div className="mt-8">
+                <Tabs defaultValue="description" className="w-full">
+                    <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent">
+                        <TabsTrigger value="description" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3">
+                            <FileText className="w-4 h-4 mr-2" />
+                            Mô tả sản phẩm
+                        </TabsTrigger>
+                        <TabsTrigger value="reviews" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3">
+                            <Star className="w-4 h-4 mr-2" />
+                            Đánh giá & Bình luận
+                        </TabsTrigger>
+                    </TabsList>
+
+                    {/* Mô tả sản phẩm */}
+                    <TabsContent value="description" className="mt-6 space-y-4">
+                        <div className="prose max-w-none">
+                            <h3 className="text-lg font-semibold mb-3">Thông tin chi tiết</h3>
+                            <p className="text-muted-foreground leading-relaxed">{product.description || "Chưa có mô tả chi tiết cho sản phẩm này."}</p>
+
+                            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <h4 className="font-medium">Thông số kỹ thuật</h4>
+                                    <div className="text-sm space-y-1 text-muted-foreground">
+                                        <p>• Chất liệu: Cotton cao cấp</p>
+                                        <p>• Xuất xứ: Việt Nam</p>
+                                        <p>• Phù hợp: Nam/Nữ</p>
+                                        <p>• Bảo quản: Giặt máy, không tẩy</p>
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <h4 className="font-medium">Chính sách</h4>
+                                    <div className="text-sm space-y-1 text-muted-foreground">
+                                        <p>• Đổi trả trong 7 ngày</p>
+                                        <p>• Miễn phí vận chuyển đơn &gt; 500k</p>
+                                        <p>• Thanh toán khi nhận hàng</p>
+                                        <p>• Bảo hành chính hãng</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </TabsContent>
+
+                    {/* Đánh giá & Bình luận */}
+                    <TabsContent value="reviews" className="mt-6 space-y-8">
+                        {/* Tổng quan đánh giá */}
+                        <div className="bg-muted/30 rounded-lg p-6">
+                            <div className="flex flex-col md:flex-row gap-6 items-center">
+                                <div className="text-center">
+                                    <div className="text-5xl font-bold">{(product.avgRating ?? 0).toFixed(1)}</div>
+                                    <div className="flex justify-center mt-2">{renderStars(product.avgRating ?? 0)}</div>
+                                    <div className="text-sm text-muted-foreground mt-1">123 đánh giá</div>
+                                </div>
+                                <Separator orientation="vertical" className="h-24 hidden md:block" />
+                                <div className="flex-1 w-full space-y-2">
+                                    {[5, 4, 3, 2, 1].map((star) => (
+                                        <div key={star} className="flex items-center gap-3">
+                                            <span className="text-sm w-12">{star} sao</span>
+                                            <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                                                <div className="h-full bg-yellow-500" style={{ width: `${Math.random() * 100}%` }} />
+                                            </div>
+                                            <span className="text-sm text-muted-foreground w-12 text-right">{Math.floor(Math.random() * 50)}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Form viết đánh giá/bình luận */}
+                        <div className="border rounded-lg p-4 bg-muted/10">
+                            <h4 className="font-medium mb-3">Viết đánh giá của bạn</h4>
+                            <div className="space-y-3">
+                                {/* Rating selector */}
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm">Đánh giá:</span>
+                                    <div className="flex gap-1">
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                            <button key={star} type="button" className="hover:scale-110 transition-transform">
+                                                <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <Textarea placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..." className="min-h-[100px]" />
+                                <div className="flex justify-end gap-2">
+                                    <Button variant="outline" size="sm">
+                                        Thêm ảnh
+                                    </Button>
+                                    <Button size="sm">Gửi đánh giá</Button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Danh sách đánh giá & bình luận */}
+                        <div>
+                            <h4 className="font-medium mb-4">Đánh giá từ khách hàng</h4>
+                            <div className="space-y-4">
+                                {[1, 2, 3, 4, 5].map((i) => (
+                                    <div key={i} className="border rounded-lg p-4">
+                                        <div className="flex items-start gap-3">
+                                            <Avatar>
+                                                <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i}`} />
+                                                <AvatarFallback>U{i}</AvatarFallback>
+                                            </Avatar>
+                                            <div className="flex-1">
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <div className="font-medium">Người dùng {i}</div>
+                                                        <div className="flex items-center gap-2 mt-1">
+                                                            {i <= 3 ? renderStars(5) : renderStars(4)}
+                                                            <span className="text-xs text-muted-foreground">{Math.floor(Math.random() * 30)} ngày trước</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <p className="text-sm text-muted-foreground mt-2">
+                                                    {i === 1
+                                                        ? "Sản phẩm rất tốt, chất lượng vượt mong đợi. Giao hàng nhanh, đóng gói cẩn thận. Sẽ ủng hộ shop lần sau!"
+                                                        : i === 2
+                                                        ? "Áo đẹp lắm, form chuẩn, vải mát. Đã mua lần 2 rồi, rất hài lòng!"
+                                                        : i === 3
+                                                        ? "Chất lượng ok, giá hợp lý. Giao hàng hơi lâu nhưng sản phẩm đẹp nên ok."
+                                                        : i === 4
+                                                        ? "Cho mình hỏi sản phẩm này còn màu trắng size XL không ạ?"
+                                                        : "Sản phẩm chất lượng tốt không các bạn? Đang phân vân có nên mua không."}
+                                                </p>
+                                                {/* Hình ảnh review */}
+                                                {(i === 1 || i === 2) && (
+                                                    <div className="flex gap-2 mt-3">
+                                                        <img src="https://via.placeholder.com/100" alt="Review" className="w-20 h-20 object-cover rounded-md border" />
+                                                        <img src="https://via.placeholder.com/100" alt="Review" className="w-20 h-20 object-cover rounded-md border" />
+                                                    </div>
+                                                )}
+                                                <div className="flex items-center gap-3 mt-3">
+                                                    <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">
+                                                        Hữu ích ({Math.floor(Math.random() * 20)})
+                                                    </Button>
+                                                    <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">
+                                                        Trả lời
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="text-center">
+                            <Button variant="outline">Xem thêm đánh giá</Button>
+                        </div>
+                    </TabsContent>
+                </Tabs>
+            </div>
+
+            <Separator className="mt-10" />
+            {/* Gợi ý sản phẩm */}
+            <div className="mt-10">
+                <Title title="Có thể bạn cũng thích" />
+                <div className="mt-4 grid grid-cols-2 gap-4">klasjldj</div>
+            </div>
         </div>
     );
 }
