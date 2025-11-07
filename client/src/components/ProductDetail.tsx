@@ -199,7 +199,7 @@ export default function ProductDetail() {
 
                     {/* thumbnail */}
                     {product && product.imageProduct && product.imageProduct.length > 1 && (
-                        <div className="mt-3 flex gap-2 overflow-x-auto pb-1 scrollbar-thin" role="tablist" aria-label="Ảnh sản phẩm">
+                        <div className="mt-3 flex gap-2 overflow-x-auto p-3 scrollbar-thin" role="tablist" aria-label="Ảnh sản phẩm">
                             {product.imageProduct.map((src, i) => (
                                 <button
                                     key={`thumb-${src}-${i}`}
