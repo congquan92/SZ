@@ -38,7 +38,7 @@ export interface ProductDetail {
     salePrice: number;
     productStatus: "ACTIVE" | "INACTIVE";
     categoryId: number;
-    video: string | null;
+    video: string;
     coverImage: string;
     imageProduct: string[];
     soldQuantity: number;

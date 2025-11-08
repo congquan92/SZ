@@ -19,6 +19,7 @@ export default function ProductHot() {
     const initProducts = async () => {
         const { data } = await ProductAPI.getProduct(10);
         setProducts(data.data);
+        // console.log("Hot Products:", data.data);
     };
 
     useEffect(() => {

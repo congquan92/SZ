@@ -169,6 +169,18 @@ export default function ProductDialog({ open, onClose, product }: Props) {
                                     <div className="aspect-square grid place-items-center w-full overflow-hidden rounded-md bg-muted text-sm text-muted-foreground">Không có ảnh</div>
                                 </CarouselItem>
                             )}
+
+                            {/* video
+                            {product.video && (
+                                <CarouselItem>
+                                    <div className="aspect-square w-full overflow-hidden rounded-md bg-muted">
+                                        <video controls className="h-full w-full object-cover" loading="lazy">
+                                            <source src={product.video} type="video/mp4" />
+                                            Your browser does not support the video tag.
+                                        </video>
+                                    </div>
+                                </CarouselItem>
+                            )} */}
                         </CarouselContent>
                         {images.length > 1 && (
                             <>
@@ -199,6 +211,7 @@ export default function ProductDialog({ open, onClose, product }: Props) {
                     <DialogHeader className="space-y-2">
                         <DialogTitle className="text-xl md:text-2xl font-semibold leading-tight text-left">{product.name}</DialogTitle>
                         {product.description && <p className="text-sm text-muted-foreground line-clamp-2 text-left">{product.description}</p>}
+                        {/* {product.video} */}
                     </DialogHeader>
                     <div className="flex items-center flex-wrap gap-2 text-xs">
                         <Badge variant="secondary">⭐ {(product.avgRating ?? 0).toFixed(1)}</Badge>
