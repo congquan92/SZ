@@ -14,7 +14,6 @@ import { CartAPI } from "@/api/cart.api";
 import { useCartStore } from "@/stores/useCartStore";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Title from "@/components/Title";
 import { ReviewAPI } from "@/api/review.api";
@@ -475,31 +474,6 @@ export default function ProductDetail() {
                                             </div>
                                         );
                                     })}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Form viết đánh giá/bình luận */}
-                        <div className="border rounded-lg p-4 bg-muted/10">
-                            <h4 className="font-medium mb-3">Viết đánh giá của bạn</h4>
-                            <div className="space-y-3">
-                                {/* Rating selector */}
-                                <div className="flex items-center gap-2">
-                                    <span className="text-sm">Đánh giá:</span>
-                                    <div className="flex gap-1">
-                                        {[1, 2, 3, 4, 5].map((star) => (
-                                            <button key={star} type="button" className="hover:scale-110 transition-transform">
-                                                <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                                <Textarea placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..." className="min-h-[100px]" />
-                                <div className="flex justify-end gap-2">
-                                    <Button variant="outline" size="sm">
-                                        Thêm ảnh
-                                    </Button>
-                                    <Button size="sm">Gửi đánh giá</Button>
                                 </div>
                             </div>
                         </div>
