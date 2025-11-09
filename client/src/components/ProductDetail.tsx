@@ -15,11 +15,11 @@ import { useCartStore } from "@/stores/useCartStore";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 import Title from "@/components/Title";
 import { ReviewAPI } from "@/api/review.api";
 import type { Review } from "@/components/types";
 import { useAuthStore } from "@/stores/useAuthStores";
+import SizeZoom from "@/components/SizeZoom";
 
 export default function ProductDetail() {
     const { id, slug } = useParams();
@@ -40,9 +40,10 @@ export default function ProductDetail() {
     const [totalPages, setTotalPages] = useState<number>(1);
     const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
 
-    // State cho lightbox
+    // Size zoom
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxMedia, setLightboxMedia] = useState<{ url: string; isVideo: boolean } | null>(null);
+    const [zoomLevel, setZoomLevel] = useState(1);
 
     const initProductDetail = useCallback(async () => {
         try {
@@ -252,9 +253,23 @@ export default function ProductDetail() {
         console.log("Edit review", review);
     };
 
+    //    Size zoom
+    const handleZoomIn = () => {
+        setZoomLevel((prev) => Math.min(prev + 0.25, 3)); // Max 3x
+    };
+
+    const handleZoomOut = () => {
+        setZoomLevel((prev) => Math.max(prev - 0.25, 0.5)); // Min 0.5x
+    };
+
+    const handleResetZoom = () => {
+        setZoomLevel(1);
+    };
+
     const handleMediaClick = (url: string, isVideo: boolean) => {
         setLightboxMedia({ url, isVideo });
         setLightboxOpen(true);
+        setZoomLevel(1); // Reset zoom khi mở
     };
 
     return (
@@ -270,7 +285,7 @@ export default function ProductDetail() {
                         <CarouselContent>
                             {product && product.imageProduct && product.imageProduct.length > 0 ? (
                                 product.imageProduct.map((img, i) => (
-                                    <CarouselItem key={`${img}-${i}`}>
+                                    <CarouselItem key={`${img}-${i}`} onClick={() => handleMediaClick(img, false)} className="cursor-pointer">
                                         <div className="aspect-square w-full overflow-hidden rounded-md bg-muted">
                                             <img src={img} alt={`${product.name} - Ảnh ${i + 1} / ${product.imageProduct.length}`} className="h-full w-full object-cover" loading="lazy" />
                                         </div>
@@ -593,6 +608,8 @@ export default function ProductDetail() {
                     </TabsContent>
                 </Tabs>
             </div>
+            {/* Lightbox xem ảnh/video */}
+            <SizeZoom isOpen={lightboxOpen} onClose={() => setLightboxOpen(false)} media={lightboxMedia} zoomLevel={zoomLevel} onZoomIn={handleZoomIn} onZoomOut={handleZoomOut} onResetZoom={handleResetZoom} />
 
             <Separator className="mt-10" />
             {/* Gợi ý sản phẩm */}
@@ -600,15 +617,6 @@ export default function ProductDetail() {
                 <Title title="Có thể bạn cũng thích" />
                 <div className="mt-4 grid grid-cols-2 gap-4">klasjldj</div>
             </div>
-
-            {/* Lightbox Dialog */}
-            <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
-                <DialogContent className="max-w-4xl w-full p-0 overflow-hidden bg-black/95">
-                    <div className="relative w-full h-[80vh] flex items-center justify-center">
-                        {lightboxMedia?.isVideo ? <video src={lightboxMedia.url} className="max-w-full max-h-full object-contain" controls autoPlay /> : <img src={lightboxMedia?.url} alt="Preview" className="max-w-full max-h-full object-contain" />}
-                    </div>
-                </DialogContent>
-            </Dialog>
         </div>
     );
 }
