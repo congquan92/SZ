@@ -128,7 +128,6 @@ export default function ProductDetail() {
             setCurrentSlide(0);
             setCurrentPage(1);
             setTotalPages(1);
-            // DON'T reset myReviews here - it's managed by separate useEffect
             carouselApi?.scrollTo(0);
         }
     }, [product, defaultPick, carouselApi]);
@@ -243,6 +242,10 @@ export default function ProductDetail() {
             quantity: qty,
             totalPrice: variant.price * qty,
         });
+    };
+
+    const handelEditReview = (review: Review) => {
+        console.log("Edit review", review);
     };
 
     return (
@@ -508,7 +511,6 @@ export default function ProductDetail() {
                                 <div className="space-y-4">
                                     {allReviews.map((review) => {
                                         try {
-                                            // Safe date formatting
                                             const reviewDate = review.createdDate
                                                 ? new Date(review.createdDate).toLocaleDateString("vi-VN", {
                                                       year: "numeric",
@@ -517,9 +519,7 @@ export default function ProductDetail() {
                                                   })
                                                 : "Không rõ ngày";
 
-                                            // Get user info from userResponse or fallback to direct fields
                                             const userName = review.userResponse?.fullName || review.fullName || "Người dùng";
-                                            // avartar mặc định nếu không có
                                             const userAvatar = review.userResponse?.avatar || review.avatarUser || `https://api.dicebear.com/7.x/avataaars/svg?seed=${review.userResponse?.id || review.id}`;
 
                                             // Kiểm tra xem review này có phải của user đang đăng nhập không
@@ -566,13 +566,9 @@ export default function ProductDetail() {
                                                                 <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">
                                                                     <Heart /> Thích
                                                                 </Button>
-                                                                {isMyReview ? (
-                                                                    <Button variant="ghost" size="sm" className="h-8 px-2 text-xs text-blue-600 hover:text-blue-700">
+                                                                {isMyReview && (
+                                                                    <Button variant="ghost" size="sm" className="h-8 px-2 text-xs text-blue-600 hover:text-blue-700" onClick={() => handelEditReview(review)}>
                                                                         Chỉnh sửa
-                                                                    </Button>
-                                                                ) : (
-                                                                    <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">
-                                                                        <Heart /> Thích
                                                                     </Button>
                                                                 )}
                                                             </div>

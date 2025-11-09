@@ -49,4 +49,35 @@ export const ReviewAPI = {
             throw error;
         }
     },
+
+    // Cập nhật review
+    updateReview: async (id: number, rating: number, comment: string) => {
+        try {
+            const response = await axiosInstance.put(`/review/update`, { id, rating, comment });
+            return response.data;
+        } catch (error) {
+            console.error("Failed to update review:", error);
+            throw error;
+        }
+    },
+    // xoa anh review
+    deleteImgReview: async (imageDelete: number[]) => {
+        try {
+            const response = await axiosInstance.put(`/review/delete-image`, imageDelete);
+            return response.data;
+        } catch (error) {
+            console.error("Failed to delete review image:", error);
+            throw error;
+        }
+    },
+    // them anh review
+    addImgReview: async (reviewId: number, imageAdd: string[]) => {
+        try {
+            const response = await axiosInstance.put(`/review/${reviewId}/add-image`, imageAdd);
+            return response.data;
+        } catch (error) {
+            console.error("Failed to add review image:", error);
+            throw error;
+        }
+    },
 };
