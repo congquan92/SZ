@@ -4,13 +4,10 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { formatVND } from "@/lib/helper";
 import type { DeliveryStatus, OrderItem } from "@/page/type";
-import { ChevronRight, Star, Camera } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { OrderAPI } from "@/api/order.api";
-import { ReviewAPI } from "@/api/review.api";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { useState } from "react";
-import { toast } from "sonner";
+
+import ReviewDialog from "@/components/ReviewDialog";
 
 const STATUS_HEADER: Record<DeliveryStatus, string> = {
     PENDING: "Chờ xử lý",
@@ -39,99 +36,6 @@ const handelCancelOrder = async (orderId: number) => {
     console.log("Kết quả huỷ đơn:", data);
 };
 
-// Component Dialog để viết đánh giá
-function ReviewDialog({ orderItemId, productName, productImage }: { orderItemId: number; productName: string; productImage: string }) {
-    const [open, setOpen] = useState(false);
-    const [rating, setRating] = useState(5);
-    const [comment, setComment] = useState("");
-    const [images, setImages] = useState<string[]>([]);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const handleSubmit = async () => {
-        if (!comment.trim()) {
-            toast.error("Vui lòng nhập nội dung đánh giá");
-            return;
-        }
-
-        try {
-            setIsSubmitting(true);
-            await ReviewAPI.addReview(orderItemId, rating, comment, images);
-            toast.success("Đã gửi đánh giá thành công!");
-            setOpen(false);
-            // Reset form
-            setRating(5);
-            setComment("");
-            setImages([]);
-        } catch (error) {
-            console.error("Failed to add review:", error);
-            toast.error("Gửi đánh giá thất bại. Vui lòng thử lại.");
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-    return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="border-primary text-primary hover:bg-primary/10">
-                    Đánh giá
-                </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-lg">
-                <DialogHeader>
-                    <DialogTitle>Đánh giá sản phẩm</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                    {/* Product info */}
-                    <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
-                        <img src={productImage} alt={productName} className="size-16 object-cover rounded-md border" />
-                        <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium line-clamp-2">{productName}</div>
-                        </div>
-                    </div>
-
-                    {/* Rating */}
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium">Đánh giá của bạn</label>
-                        <div className="flex items-center gap-2">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                                <button key={star} type="button" onClick={() => setRating(star)} className="hover:scale-110 transition-transform">
-                                    <Star className={`w-7 h-7 ${star <= rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`} />
-                                </button>
-                            ))}
-                            <span className="ml-2 text-sm text-muted-foreground">({rating} sao)</span>
-                        </div>
-                    </div>
-
-                    {/* Comment */}
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium">Nhận xét của bạn</label>
-                        <Textarea placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..." className="min-h-[120px]" value={comment} onChange={(e) => setComment(e.target.value)} />
-                    </div>
-
-                    {/* Images upload (placeholder) */}
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium">Hình ảnh (tùy chọn)</label>
-                        <Button variant="outline" size="sm" disabled className="w-full">
-                            <Camera className="mr-2 h-4 w-4" />
-                            Thêm hình ảnh
-                        </Button>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex justify-end gap-2 pt-2">
-                        <Button variant="outline" onClick={() => setOpen(false)} disabled={isSubmitting}>
-                            Hủy
-                        </Button>
-                        <Button onClick={handleSubmit} disabled={isSubmitting}>
-                            {isSubmitting ? "Đang gửi..." : "Gửi đánh giá"}
-                        </Button>
-                    </div>
-                </div>
-            </DialogContent>
-        </Dialog>
-    );
-}
 const canReorderStatuses: DeliveryStatus[] = ["DELIVERED", "COMPLETED", "CANCELLED", "REFUNDED"];
 function renderActions(status: DeliveryStatus, orderId: number) {
     // luôn có xem chi tiết

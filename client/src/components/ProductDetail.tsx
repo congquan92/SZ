@@ -15,6 +15,7 @@ import { useCartStore } from "@/stores/useCartStore";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import Title from "@/components/Title";
 import { ReviewAPI } from "@/api/review.api";
 import type { Review } from "@/components/types";
@@ -38,6 +39,10 @@ export default function ProductDetail() {
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [totalPages, setTotalPages] = useState<number>(1);
     const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
+
+    // State cho lightbox
+    const [lightboxOpen, setLightboxOpen] = useState(false);
+    const [lightboxMedia, setLightboxMedia] = useState<{ url: string; isVideo: boolean } | null>(null);
 
     const initProductDetail = useCallback(async () => {
         try {
@@ -245,6 +250,11 @@ export default function ProductDetail() {
 
     const handelEditReview = (review: Review) => {
         console.log("Edit review", review);
+    };
+
+    const handleMediaClick = (url: string, isVideo: boolean) => {
+        setLightboxMedia({ url, isVideo });
+        setLightboxOpen(true);
     };
 
     return (
@@ -528,12 +538,21 @@ export default function ProductDetail() {
                                                                 )}
                                                             </div>
                                                             <p className="text-sm text-muted-foreground mt-2">{review.comment || "Không có bình luận"}</p>
-                                                            {/* Hình ảnh review */}
+                                                            {/* Hình ảnh/Video review */}
                                                             {review.images && Array.isArray(review.images) && review.images.length > 0 && (
                                                                 <div className="flex gap-2 mt-3 flex-wrap">
-                                                                    {review.images.map((img) => (
-                                                                        <img key={img.id} src={img.url} alt="Review" className="w-20 h-20 object-cover rounded-md border" loading="lazy" />
-                                                                    ))}
+                                                                    {review.images.map((img) => {
+                                                                        const isVideo = img.url.includes(".mp4") || img.url.includes(".mov") || img.url.includes(".avi") || img.url.includes(".webm");
+                                                                        return (
+                                                                            <div key={img.id} className="relative cursor-pointer hover:opacity-80 transition-opacity" onClick={() => handleMediaClick(img.url, isVideo)}>
+                                                                                {isVideo ? (
+                                                                                    <video src={img.url} className="w-32 h-32 object-cover rounded-md border" />
+                                                                                ) : (
+                                                                                    <img src={img.url} alt="Review" className="w-32 h-32 object-cover rounded-md border" loading="lazy" />
+                                                                                )}
+                                                                            </div>
+                                                                        );
+                                                                    })}
                                                                 </div>
                                                             )}
                                                             <div className="flex items-center gap-3 mt-3">
@@ -581,6 +600,15 @@ export default function ProductDetail() {
                 <Title title="Có thể bạn cũng thích" />
                 <div className="mt-4 grid grid-cols-2 gap-4">klasjldj</div>
             </div>
+
+            {/* Lightbox Dialog */}
+            <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
+                <DialogContent className="max-w-4xl w-full p-0 overflow-hidden bg-black/95">
+                    <div className="relative w-full h-[80vh] flex items-center justify-center">
+                        {lightboxMedia?.isVideo ? <video src={lightboxMedia.url} className="max-w-full max-h-full object-contain" controls autoPlay /> : <img src={lightboxMedia?.url} alt="Preview" className="max-w-full max-h-full object-contain" />}
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

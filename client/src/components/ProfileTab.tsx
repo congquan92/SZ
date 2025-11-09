@@ -1,4 +1,5 @@
 import { AuthAPI } from "@/api/auth.api";
+import { UploadImgAPI } from "@/api/uploadImg.api";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -85,7 +86,7 @@ export default function ProfileTab() {
 
             // 1. Nếu có ảnh mới, upload và lấy URL
             if (avatarFile) {
-                const uploadResponse = await AuthAPI.uploadImg(avatarFile);
+                const uploadResponse = await UploadImgAPI.uploadImg(avatarFile);
                 if (uploadResponse.data && uploadResponse.data.length > 0) {
                     updatedAvatarUrl = uploadResponse.data[0];
                 } else {
