@@ -9,7 +9,7 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { CircleDollarSign, ShoppingCart, Star, FileText } from "lucide-react";
+import { CircleDollarSign, ShoppingCart, Star, FileText, Heart } from "lucide-react";
 import { CartAPI } from "@/api/cart.api";
 import { useCartStore } from "@/stores/useCartStore";
 import { toast } from "sonner";
@@ -19,13 +19,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Title from "@/components/Title";
 import { ReviewAPI } from "@/api/review.api";
 import type { Review } from "@/components/types";
+import { useAuthStore } from "@/stores/useAuthStores";
 
 export default function ProductDetail() {
     const { id, slug } = useParams();
     const [reviews, setReviews] = useState<Review[]>([]);
+    const [myReviews, setMyReviews] = useState<Review[]>([]); // Đánh giá của user đăng nhập
     const [product, setProduct] = useState<ProductDetailType | null>(null);
     const [carouselApi, setCarouselApi] = useState<CarouselApi>();
     const [currentSlide, setCurrentSlide] = useState(0);
+    const { user } = useAuthStore();
     const { fetchCart } = useCartStore();
 
     // State sử dụng Record như ProductDialog
@@ -54,9 +57,7 @@ export default function ProductDetail() {
             const data_review = await ReviewAPI.getReviewProductsById(Number(id), 0);
             console.log("review data:", data_review.data);
 
-            // checked API is array ?
-            const reviewsArray = Array.isArray(data_review.data?.data) ? data_review.data.data : [];
-            setReviews(reviewsArray);
+            setReviews(data_review.data.data);
             setCurrentPage(data_review.data?.pageNumber || 1);
             setTotalPages(data_review.data?.totalPages || 1);
         } catch (error) {
@@ -68,9 +69,10 @@ export default function ProductDetail() {
     const initReviewsMe = useCallback(async () => {
         try {
             const data = await ReviewAPI.getReviewMe(Number(id));
-            console.log("review me data:", data);
+            setMyReviews(data.data);
         } catch (error) {
-            console.error("Failed to load reviews:", error);
+            console.error("Failed to load my reviews:", error);
+            setMyReviews([]); // Nếu lỗi thì set empty
         }
     }, [id]);
 
@@ -110,8 +112,13 @@ export default function ProductDetail() {
     useEffect(() => {
         initProductDetail();
         initReviews();
-        initReviewsMe();
-    }, [initProductDetail, initReviews, initReviewsMe]);
+
+        if (user) {
+            initReviewsMe();
+        } else {
+            setMyReviews([]);
+        }
+    }, [initProductDetail, initReviews, initReviewsMe, user]);
 
     // Reset state khi product thay đổi
     useEffect(() => {
@@ -121,6 +128,7 @@ export default function ProductDetail() {
             setCurrentSlide(0);
             setCurrentPage(1);
             setTotalPages(1);
+            // DON'T reset myReviews here - it's managed by separate useEffect
             carouselApi?.scrollTo(0);
         }
     }, [product, defaultPick, carouselApi]);
@@ -182,6 +190,17 @@ export default function ProductDetail() {
             };
         });
     }, [sizeAttr, pick, product]);
+
+    // Merge myReviews (đánh giá của user) ở đầu, sau đó là reviews khác (loại bỏ duplicate)
+    const allReviews = useMemo(() => {
+        if (!myReviews || myReviews.length === 0) return reviews;
+
+        const myReviewIds = new Set(myReviews.map((r) => r.id));
+        // Lọc bỏ reviews trùng với myReviews
+        const otherReviews = reviews.filter((r) => !myReviewIds.has(r.id));
+
+        return [...myReviews, ...otherReviews];
+    }, [myReviews, reviews]);
 
     // --- Computed values giống ProductDialog ---
     if (!product) return null;
@@ -436,13 +455,13 @@ export default function ProductDetail() {
                                 <div className="text-center">
                                     <div className="text-5xl font-bold">{(product.avgRating ?? 0).toFixed(1)}</div>
                                     <div className="flex justify-center mt-2">{renderStars(product.avgRating ?? 0)}</div>
-                                    <div className="text-sm text-muted-foreground mt-1">{reviews?.length || 0} đánh giá</div>
+                                    <div className="text-sm text-muted-foreground mt-1">{allReviews?.length || 0} đánh giá</div>
                                 </div>
                                 <Separator orientation="vertical" className="h-24 hidden md:block" />
                                 <div className="flex-1 w-full space-y-2">
                                     {[5, 4, 3, 2, 1].map((star) => {
-                                        const count = reviews?.filter((r) => r.rating === star).length || 0;
-                                        const percentage = reviews && reviews.length > 0 ? (count / reviews.length) * 100 : 0;
+                                        const count = allReviews?.filter((r) => r.rating === star).length || 0;
+                                        const percentage = allReviews && allReviews.length > 0 ? (count / allReviews.length) * 100 : 0;
                                         return (
                                             <div key={star} className="flex items-center gap-3">
                                                 <span className="text-sm w-12">{star} sao</span>
@@ -484,10 +503,10 @@ export default function ProductDetail() {
 
                         {/* Danh sách đánh giá & bình luận */}
                         <div>
-                            <h4 className="font-medium mb-4">Đánh giá từ khách hàng ({reviews?.length || 0})</h4>
-                            {reviews && reviews.length > 0 ? (
+                            <h4 className="font-medium mb-4">Đánh giá từ khách hàng ({allReviews?.length || 0})</h4>
+                            {allReviews && allReviews.length > 0 ? (
                                 <div className="space-y-4">
-                                    {reviews.map((review) => {
+                                    {allReviews.map((review) => {
                                         try {
                                             // Safe date formatting
                                             const reviewDate = review.createdDate
@@ -503,8 +522,10 @@ export default function ProductDetail() {
                                             // avartar mặc định nếu không có
                                             const userAvatar = review.userResponse?.avatar || review.avatarUser || `https://api.dicebear.com/7.x/avataaars/svg?seed=${review.userResponse?.id || review.id}`;
 
+                                            // Kiểm tra xem review này có phải của user đang đăng nhập không
+                                            const isMyReview = user && myReviews.some((mr) => mr.id === review.id);
                                             return (
-                                                <div key={review.id} className="border rounded-lg p-4">
+                                                <div key={review.id} className={`border rounded-lg p-4 ${isMyReview ? "bg-blue-50/50 border-blue-200" : ""}`}>
                                                     <div className="flex items-start gap-3">
                                                         <Avatar>
                                                             <AvatarImage src={userAvatar} />
@@ -513,7 +534,14 @@ export default function ProductDetail() {
                                                         <div className="flex-1">
                                                             <div className="flex items-center justify-between">
                                                                 <div>
-                                                                    <div className="font-medium">{userName}</div>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <div className="font-medium">{userName}</div>
+                                                                        {isMyReview && (
+                                                                            <Badge variant="default" className="text-xs bg-blue-600">
+                                                                                Đánh giá của bạn
+                                                                            </Badge>
+                                                                        )}
+                                                                    </div>
                                                                     <div className="flex items-center gap-2 mt-1">
                                                                         {renderStars(review.rating || 0)}
                                                                         <span className="text-xs text-muted-foreground">{reviewDate}</span>
@@ -536,11 +564,17 @@ export default function ProductDetail() {
                                                             )}
                                                             <div className="flex items-center gap-3 mt-3">
                                                                 <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">
-                                                                    Hữu ích
+                                                                    <Heart /> Thích
                                                                 </Button>
-                                                                <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">
-                                                                    Trả lời
-                                                                </Button>
+                                                                {isMyReview ? (
+                                                                    <Button variant="ghost" size="sm" className="h-8 px-2 text-xs text-blue-600 hover:text-blue-700">
+                                                                        Chỉnh sửa
+                                                                    </Button>
+                                                                ) : (
+                                                                    <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">
+                                                                        <Heart /> Thích
+                                                                    </Button>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -560,7 +594,7 @@ export default function ProductDetail() {
                             )}
                         </div>
 
-                        {reviews && reviews.length > 0 && currentPage < totalPages && (
+                        {allReviews && allReviews.length > 0 && currentPage < totalPages && (
                             <div className="text-center">
                                 <Button variant="outline" onClick={loadMoreReviews} disabled={isLoadingMore}>
                                     {isLoadingMore ? "Đang tải..." : "Xem thêm đánh giá"}
