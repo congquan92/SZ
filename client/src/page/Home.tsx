@@ -3,6 +3,8 @@ import ButtonCenter from "@/components/ButtonCenter";
 import Gallery from "@/components/Gallery";
 import ProductHot from "@/components/ProductHot";
 import Title from "@/components/Title";
+import ProductCarousel from "@/components/ProductCarousel";
+import ProductSale from "@/components/ProductSale";
 
 export default function Home() {
     return (
@@ -29,17 +31,16 @@ export default function Home() {
                 </div>
                 <Title title="Sản Phẩm Bán Chạy" subtitle="Khám Phá Sản Phẩm Bán Chạy" />
                 {/* dung carousel */}
-                sản Phẩm bán Chạy
-                <ButtonCenter input="Xem Tất Cả" link="/product" />
+                <ProductCarousel />
             </div>
 
-            {/* Hàng Sale 50% */}
+            {/* Hàng Sale 50% -- lấy theo salePrice:asc 10 sản phẩm */}
             <div className="mt-3">
                 <div className="w-full max-w-[1600px] mx-auto mb-3">
                     <img src="https://file.hstatic.net/1000253775/file/flashsale_dk_b277e7264a9c43a190f1bbbd14166c67.jpg" alt="Banner Effect" className="w-full h-auto" />
                 </div>
                 <Title title="Hàng Sale 50%" subtitle="Khám Phá Sản Phẩm Giảm Giá" />
-                hàng sale 50%
+                <ProductSale />
                 <ButtonCenter input="Xem Tất Cả" link="/sale" />
             </div>
 

@@ -12,13 +12,35 @@ export const ProductAPI = {
         }
     },
 
-    // lọc sản phẩm trường salePrice
+    // lọc sản phẩm trường createdAt:desc
+    getProductHot: async (size: number, page: number = 0) => {
+        try {
+            const response = await axiosInstance.get(`product/list?sort=createdAt%3Adesc&page=${page}&size=${size}`);
+            return response.data;
+        } catch (error) {
+            console.error("Get products failed", error);
+            throw error;
+        }
+    },
+
+    // lọc sản phẩm trường salePrice asc (giá thấp đến cao)
     getProductSale: async (size: number, page: number = 0) => {
         try {
-            const response = await axiosInstance.get(`http://localhost:8080/product/list?sort=salePrice%3Aasc&page=${page}&size=${size}`);
+            const response = await axiosInstance.get(`/product/list?sort=salePrice%3Aasc&page=${page}&size=${size}`);
             return response.data;
         } catch (error) {
             console.error("Get sale products failed", error);
+            throw error;
+        }
+    },
+
+    // lọc sản phẩm theo soldQuantity giảm dần desc
+    getProductSelling: async (size: number, page: number = 0) => {
+        try {
+            const response = await axiosInstance.get(`/product/list?sort=soldQuantity%3Adesc&page=${page}&size=${size}`);
+            return response.data;
+        } catch (error) {
+            console.error("Get selling products failed", error);
             throw error;
         }
     },

@@ -22,7 +22,7 @@ import Order from "@/page/Order";
 import ProductCategory from "@/page/ProductCategory";
 
 function App() {
-    const { fetchUser, token, user, loading } = useAuthStore();
+    const { fetchUser, token, user } = useAuthStore();
 
     const init = async () => {
         if (token && !user) {
@@ -33,14 +33,6 @@ function App() {
     useEffect(() => {
         init();
     }, []);
-
-    // if (loading) {
-    //     return (
-    //         <div className="flex items-center justify-center h-screen">
-    //             <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
-    //         </div>
-    //     );
-    // }
 
     const LinkRoute = [
         { path: "/", element: <Home /> },

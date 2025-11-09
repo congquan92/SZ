@@ -2,10 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 
-import { Search, PackageCheck, Truck, Clock, Ban, Box, CheckCircle } from "lucide-react";
+import { Search, PackageCheck, Truck, Clock, Ban, Box, CheckCircle, Home } from "lucide-react";
 import { OrderAPI } from "@/api/order.api";
 import type { DeliveryStatus, OrderItem } from "@/page/type";
 import OrderSection from "@/components/OrderSection";
+import { useAuthStore } from "@/stores/useAuthStores";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 // ===== Label tabs =====
 const STATUS_TABS: { key: "ALL" | DeliveryStatus; label: string; icon?: React.ComponentType<{ className?: string }> }[] = [
@@ -20,30 +23,29 @@ const STATUS_TABS: { key: "ALL" | DeliveryStatus; label: string; icon?: React.Co
     { key: "REFUNDED", label: "Hoàn tiền", icon: Ban },
 ];
 
-// ============================== PAGE ==============================
 export default function OrderPage() {
     const [active, setActive] = useState<"ALL" | DeliveryStatus>("ALL");
+    const { user } = useAuthStore();
     const [q, setQ] = useState("");
     const [orders, setOrders] = useState<OrderItem[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // Load orders từ API
-    useEffect(() => {
-        const fetchOrders = async () => {
-            try {
-                setLoading(true);
-                const response = await OrderAPI.getOrderAll();
-                // console.log("Orders from API:", response);
-                setOrders(response.data.data);
-            } catch (error) {
-                console.error("Error fetching orders:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
+    const init = async () => {
+        try {
+            setLoading(true);
+            const response = await OrderAPI.getOrderAll();
+            setOrders(response.data.data);
+        } catch (error) {
+            console.error("Error fetching orders:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-        fetchOrders();
-    }, []);
+    useEffect(() => {
+        if (!user) return;
+        init();
+    }, [user]);
 
     // Filter orders
     const filtered = useMemo(() => {
@@ -68,6 +70,19 @@ export default function OrderPage() {
         const orderStatus: DeliveryStatus[] = ["PENDING", "CONFIRMED", "PACKED", "SHIPPED", "DELIVERED", "COMPLETED", "CANCELLED", "REFUNDED"];
         return orderStatus.filter((s) => (map.get(s)?.length || 0) > 0).map((s) => ({ status: s, orders: map.get(s)! }));
     }, [filtered]);
+
+    if (!user) {
+        return (
+            <div className="container mx-auto flex items-center justify-center flex-col min-h-[500px]">
+                <div className="mt-6">Vui lòng đăng nhập để xem đơn hàng.</div>
+                <Button className="mt-6">
+                    <Link to="/login">
+                        <Home className="inline-flex mr-2" /> Đăng nhập ngay
+                    </Link>
+                </Button>
+            </div>
+        );
+    }
 
     return (
         <div className="container max-w-5xl mx-auto py-6">

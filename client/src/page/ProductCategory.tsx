@@ -16,7 +16,7 @@ import BreadcrumbCustom from "@/components/BreadcrumbCustom";
 import Title from "@/components/Title";
 
 export default function ProductCategory() {
-    const { id, slug, name } = useParams();
+    const { id,  name } = useParams();
     const [products, setProducts] = useState<Product[]>([]);
     const [selectedProduct, setSelectedProduct] = useState<ProductDetail | null>(null);
     const [loading, setLoading] = useState(true);

@@ -53,7 +53,7 @@ export default function Cart() {
     if (!user) {
         return (
             <div className="container mx-auto flex items-center justify-center flex-col min-h-[500px]">
-                <div className="mt-6">Vui lòng đăng nhập để xem trang cá nhân.</div>
+                <div className="mt-6">Vui lòng đăng nhập để xem giỏ hàng.</div>
                 <Button className="mt-6">
                     <Link to="/login">
                         <Home className="inline-flex mr-2" /> Đăng nhập ngay
