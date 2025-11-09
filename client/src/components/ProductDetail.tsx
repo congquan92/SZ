@@ -32,31 +32,68 @@ export default function ProductDetail() {
     const [pick, setPick] = useState<Record<string, string>>({});
     const [qty, setQty] = useState<number>(1);
 
+    // State cho pagination reviews
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const [totalPages, setTotalPages] = useState<number>(1);
+    const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
+
     const initProductDetail = useCallback(async () => {
         try {
             const data = await ProductAPI.getProductById(Number(id));
             setProduct(data.data);
-            console.log("product detail:", data.data);
+            // console.log("product detail:", data.data);
         } catch (error) {
             console.error("Failed to load product detail:", error);
             setProduct(null);
         }
     }, [id]);
 
-    // TODO review lỗi
     const initReviews = useCallback(async () => {
         try {
-            const data_review = await ReviewAPI.getReviewProductsById(Number(id));
-            console.log("review raw:", data_review);
+            // Page 0 cho request đầu tiên (API sử dụng 0-indexed)
+            const data_review = await ReviewAPI.getReviewProductsById(Number(id), 0);
             console.log("review data:", data_review.data);
-            // Ensure reviews is always an array
-            const reviewsArray = Array.isArray(data_review.data) ? data_review.data : [];
+
+            // checked API is array ?
+            const reviewsArray = Array.isArray(data_review.data?.data) ? data_review.data.data : [];
             setReviews(reviewsArray);
+            setCurrentPage(data_review.data?.pageNumber || 1);
+            setTotalPages(data_review.data?.totalPages || 1);
         } catch (error) {
             console.error("Failed to load reviews:", error);
             setReviews([]);
         }
     }, [id]);
+
+    const initReviewsMe = useCallback(async () => {
+        try {
+            const data = await ReviewAPI.getReviewMe(Number(id));
+            console.log("review me data:", data);
+        } catch (error) {
+            console.error("Failed to load reviews:", error);
+        }
+    }, [id]);
+
+    const loadMoreReviews = useCallback(async () => {
+        if (isLoadingMore || currentPage >= totalPages) return;
+
+        try {
+            setIsLoadingMore(true);
+            // API sử dụng 0-indexed, currentPage đang lưu là 1-indexed từ response
+            const data_review = await ReviewAPI.getReviewProductsById(Number(id), currentPage);
+            console.log("load more review data:", data_review.data);
+
+            const newReviewsArray = Array.isArray(data_review.data?.data) ? data_review.data.data : [];
+            setReviews((prev) => [...prev, ...newReviewsArray]);
+            setCurrentPage(data_review.data?.pageNumber || currentPage + 1);
+            setTotalPages(data_review.data?.totalPages || 1);
+        } catch (error) {
+            console.error("Failed to load more reviews:", error);
+            toast.error("Không thể tải thêm đánh giá");
+        } finally {
+            setIsLoadingMore(false);
+        }
+    }, [id, currentPage, totalPages, isLoadingMore]);
 
     // --- Extract attributes giống ProductDialog ---
     const colorAttr = useMemo(() => product?.attributes.find((a) => a.name.toLowerCase().includes("màu")) ?? null, [product?.attributes]);
@@ -73,7 +110,8 @@ export default function ProductDetail() {
     useEffect(() => {
         initProductDetail();
         initReviews();
-    }, [initProductDetail, initReviews]);
+        initReviewsMe();
+    }, [initProductDetail, initReviews, initReviewsMe]);
 
     // Reset state khi product thay đổi
     useEffect(() => {
@@ -81,6 +119,8 @@ export default function ProductDetail() {
             setPick(defaultPick);
             setQty(1);
             setCurrentSlide(0);
+            setCurrentPage(1);
+            setTotalPages(1);
             carouselApi?.scrollTo(0);
         }
     }, [product, defaultPick, carouselApi]);
@@ -458,17 +498,22 @@ export default function ProductDetail() {
                                                   })
                                                 : "Không rõ ngày";
 
+                                            // Get user info from userResponse or fallback to direct fields
+                                            const userName = review.userResponse?.fullName || review.fullName || "Người dùng";
+                                            // avartar mặc định nếu không có
+                                            const userAvatar = review.userResponse?.avatar || review.avatarUser || `https://api.dicebear.com/7.x/avataaars/svg?seed=${review.userResponse?.id || review.id}`;
+
                                             return (
                                                 <div key={review.id} className="border rounded-lg p-4">
                                                     <div className="flex items-start gap-3">
                                                         <Avatar>
-                                                            <AvatarImage src={review.avatarUser || `https://api.dicebear.com/7.x/avataaars/svg?seed=${review.userId}`} />
-                                                            <AvatarFallback>{review.fullName?.charAt(0)?.toUpperCase() || "U"}</AvatarFallback>
+                                                            <AvatarImage src={userAvatar} />
+                                                            <AvatarFallback>{userName?.charAt(0)?.toUpperCase() || "U"}</AvatarFallback>
                                                         </Avatar>
                                                         <div className="flex-1">
                                                             <div className="flex items-center justify-between">
                                                                 <div>
-                                                                    <div className="font-medium">{review.fullName || "Người dùng"}</div>
+                                                                    <div className="font-medium">{userName}</div>
                                                                     <div className="flex items-center gap-2 mt-1">
                                                                         {renderStars(review.rating || 0)}
                                                                         <span className="text-xs text-muted-foreground">{reviewDate}</span>
@@ -515,9 +560,11 @@ export default function ProductDetail() {
                             )}
                         </div>
 
-                        {reviews && reviews.length > 0 && (
+                        {reviews && reviews.length > 0 && currentPage < totalPages && (
                             <div className="text-center">
-                                <Button variant="outline">Xem thêm đánh giá</Button>
+                                <Button variant="outline" onClick={loadMoreReviews} disabled={isLoadingMore}>
+                                    {isLoadingMore ? "Đang tải..." : "Xem thêm đánh giá"}
+                                </Button>
                             </div>
                         )}
                     </TabsContent>

@@ -9,21 +9,43 @@ export const ReviewAPI = {
             throw error;
         }
     },
-    getReviewProductsById: async (productId: number) => {
+    getReviewProductsById: async (productId: number, page: number = 0, size: number = 10) => {
         try {
-            const response = await axiosInstance.get(`review/product/${productId}`);
+            const response = await axiosInstance.get(`/review/product/list/${productId}?page=${page}&size=${size}`);
             return response.data;
         } catch (error) {
             console.error("Failed to fetch review products:", error);
             throw error;
         }
     },
-    getReviewById: async (reviewId: number) => {
+    getReviewProductVariantsById: async (productVariantId: number, page: number = 0, size: number = 10) => {
         try {
-            const response = await axiosInstance.get(`review/${reviewId}`);
+            const response = await axiosInstance.get(`/review/productVariant/list/${productVariantId}?page=${page}&size=${size}`);
             return response.data;
         } catch (error) {
-            console.error("Failed to fetch review:", error);
+            console.error("Failed to fetch review product variants:", error);
+            throw error;
+        }
+    },
+
+    //lay review theo id ( bị thừa =)))
+    getReviewById: async (reviewId: number) => {
+        try {
+            const response = await axiosInstance.get(`/review/${reviewId}`);
+            return response.data;
+        } catch (error) {
+            console.error("Failed to fetch review by id:", error);
+            throw error;
+        }
+    },
+
+    // Lấy review của người dùng đang đăng nhập
+    getReviewMe: async (productId: number) => {
+        try {
+            const response = await axiosInstance.get(`/review/product/${productId}`);
+            return response.data;
+        } catch (error) {
+            console.error("Failed to fetch review by user id:", error);
             throw error;
         }
     },

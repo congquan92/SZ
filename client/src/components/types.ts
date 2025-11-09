@@ -53,7 +53,8 @@ export interface ProductDetail {
 export interface Review {
     id: number | string;
     productId: number | null;
-    userId: number;
+    userResponse?: UserResponse; // API returns userResponse object
+    userId?: number; // Fallback if userResponse is not present
     avatarUser: string | null;
     fullName: string;
     rating: number;
@@ -62,4 +63,21 @@ export interface Review {
     images: { id: number; url: string }[];
     createdDate: string; // API returns createdDate
     updatedAt?: string;
+}
+export interface UserResponse {
+    id: number;
+    userName: string;
+    fullName: string;
+    gender: "MALE" | "FEMALE" | "OTHER";
+    dateOfBirth: string;
+    email: string;
+    phone: string | null;
+    avatar: string | null;
+    status: string;
+    point: number;
+    verifiedEmail: boolean;
+    addressResponses: unknown[];
+    totalSpent: number | null;
+    userRankResponse: unknown | null;
+    roles: unknown | null;
 }
