@@ -15,7 +15,7 @@ export const ProductAPI = {
     // lọc sản phẩm trường salePrice
     getProductSale: async (size: number, page: number = 0) => {
         try {
-            const response = await axiosInstance.get(`product/list?sort=salePrice&page=${page}&size=${size}`);
+            const response = await axiosInstance.get(`http://localhost:8080/product/list?sort=salePrice%3Aasc&page=${page}&size=${size}`);
             return response.data;
         } catch (error) {
             console.error("Get sale products failed", error);

@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
+import { toSlug } from "@/lib/helper";
 import type { Category } from "@/page/type";
 import { useAuthStore } from "@/stores/useAuthStores";
 import { useCartStore } from "@/stores/useCartStore";
@@ -197,7 +198,7 @@ export default function Navbar() {
                                                     <div key={mid.id} className="space-y-2">
                                                         {/* Link cấp 2 */}
                                                         <NavigationMenuLink asChild>
-                                                            <Link to={`/category/${mid.id}`} className="font-medium leading-none hover:underline">
+                                                            <Link to={`/category/${mid.id}/${toSlug(mid.name)}/${mid.name}`} className="font-medium leading-none hover:underline">
                                                                 {mid.name}
                                                             </Link>
                                                         </NavigationMenuLink>
@@ -208,7 +209,7 @@ export default function Navbar() {
                                                                 {mid.childCategory!.map((sub) => (
                                                                     <li key={sub.id}>
                                                                         <NavigationMenuLink asChild>
-                                                                            <Link to={`/category/${sub.id}`} className="block text-sm text-muted-foreground hover:text-foreground">
+                                                                            <Link to={`/category/${sub.id}/${toSlug(sub.name)}/${sub.name}`} className="block text-sm text-muted-foreground hover:text-foreground">
                                                                                 {sub.name}
                                                                             </Link>
                                                                         </NavigationMenuLink>

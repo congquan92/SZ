@@ -51,15 +51,15 @@ export interface ProductDetail {
 
 // review type
 export interface Review {
-    avatarUser: string;
-    comment: string;
-    fullName: string;
-    id: string;
-    images: string[];
-    productId: number;
-    rating: number;
-    status: string;
+    id: number | string;
+    productId: number | null;
     userId: number;
-    createdAt: string;
-    updatedAt: string;
+    avatarUser: string | null;
+    fullName: string;
+    rating: number;
+    comment: string;
+    status: string | null;
+    images: { id: number; url: string }[];
+    createdDate: string; // API returns createdDate
+    updatedAt?: string;
 }

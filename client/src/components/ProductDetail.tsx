@@ -18,10 +18,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Title from "@/components/Title";
 import { ReviewAPI } from "@/api/review.api";
+import type { Review } from "@/components/types";
 
 export default function ProductDetail() {
     const { id, slug } = useParams();
-    const [reviews, setReviews] = useState([]);
+    const [reviews, setReviews] = useState<Review[]>([]);
     const [product, setProduct] = useState<ProductDetailType | null>(null);
     const [carouselApi, setCarouselApi] = useState<CarouselApi>();
     const [currentSlide, setCurrentSlide] = useState(0);
@@ -42,11 +43,15 @@ export default function ProductDetail() {
         }
     }, [id]);
 
+    // TODO review lỗi
     const initReviews = useCallback(async () => {
         try {
             const data_review = await ReviewAPI.getReviewProductsById(Number(id));
-            setReviews(data_review.data);
-            console.log("review:", data_review.data);
+            console.log("review raw:", data_review);
+            console.log("review data:", data_review.data);
+            // Ensure reviews is always an array
+            const reviewsArray = Array.isArray(data_review.data) ? data_review.data : [];
+            setReviews(reviewsArray);
         } catch (error) {
             console.error("Failed to load reviews:", error);
             setReviews([]);
@@ -391,19 +396,23 @@ export default function ProductDetail() {
                                 <div className="text-center">
                                     <div className="text-5xl font-bold">{(product.avgRating ?? 0).toFixed(1)}</div>
                                     <div className="flex justify-center mt-2">{renderStars(product.avgRating ?? 0)}</div>
-                                    <div className="text-sm text-muted-foreground mt-1">123 đánh giá</div>
+                                    <div className="text-sm text-muted-foreground mt-1">{reviews?.length || 0} đánh giá</div>
                                 </div>
                                 <Separator orientation="vertical" className="h-24 hidden md:block" />
                                 <div className="flex-1 w-full space-y-2">
-                                    {[5, 4, 3, 2, 1].map((star) => (
-                                        <div key={star} className="flex items-center gap-3">
-                                            <span className="text-sm w-12">{star} sao</span>
-                                            <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                                                <div className="h-full bg-yellow-500" style={{ width: `${Math.random() * 100}%` }} />
+                                    {[5, 4, 3, 2, 1].map((star) => {
+                                        const count = reviews?.filter((r) => r.rating === star).length || 0;
+                                        const percentage = reviews && reviews.length > 0 ? (count / reviews.length) * 100 : 0;
+                                        return (
+                                            <div key={star} className="flex items-center gap-3">
+                                                <span className="text-sm w-12">{star} sao</span>
+                                                <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                                                    <div className="h-full bg-yellow-500" style={{ width: `${percentage}%` }} />
+                                                </div>
+                                                <span className="text-sm text-muted-foreground w-12 text-right">{count}</span>
                                             </div>
-                                            <span className="text-sm text-muted-foreground w-12 text-right">{Math.floor(Math.random() * 50)}</span>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>
@@ -435,61 +444,82 @@ export default function ProductDetail() {
 
                         {/* Danh sách đánh giá & bình luận */}
                         <div>
-                            <h4 className="font-medium mb-4">Đánh giá từ khách hàng</h4>
-                            <div className="space-y-4">
-                                {[1, 2, 3, 4, 5].map((i) => (
-                                    <div key={i} className="border rounded-lg p-4">
-                                        <div className="flex items-start gap-3">
-                                            <Avatar>
-                                                <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i}`} />
-                                                <AvatarFallback>U{i}</AvatarFallback>
-                                            </Avatar>
-                                            <div className="flex-1">
-                                                <div className="flex items-center justify-between">
-                                                    <div>
-                                                        <div className="font-medium">Người dùng {i}</div>
-                                                        <div className="flex items-center gap-2 mt-1">
-                                                            {i <= 3 ? renderStars(5) : renderStars(4)}
-                                                            <span className="text-xs text-muted-foreground">{Math.floor(Math.random() * 30)} ngày trước</span>
+                            <h4 className="font-medium mb-4">Đánh giá từ khách hàng ({reviews?.length || 0})</h4>
+                            {reviews && reviews.length > 0 ? (
+                                <div className="space-y-4">
+                                    {reviews.map((review) => {
+                                        try {
+                                            // Safe date formatting
+                                            const reviewDate = review.createdDate
+                                                ? new Date(review.createdDate).toLocaleDateString("vi-VN", {
+                                                      year: "numeric",
+                                                      month: "long",
+                                                      day: "numeric",
+                                                  })
+                                                : "Không rõ ngày";
+
+                                            return (
+                                                <div key={review.id} className="border rounded-lg p-4">
+                                                    <div className="flex items-start gap-3">
+                                                        <Avatar>
+                                                            <AvatarImage src={review.avatarUser || `https://api.dicebear.com/7.x/avataaars/svg?seed=${review.userId}`} />
+                                                            <AvatarFallback>{review.fullName?.charAt(0)?.toUpperCase() || "U"}</AvatarFallback>
+                                                        </Avatar>
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center justify-between">
+                                                                <div>
+                                                                    <div className="font-medium">{review.fullName || "Người dùng"}</div>
+                                                                    <div className="flex items-center gap-2 mt-1">
+                                                                        {renderStars(review.rating || 0)}
+                                                                        <span className="text-xs text-muted-foreground">{reviewDate}</span>
+                                                                    </div>
+                                                                </div>
+                                                                {review.status && (
+                                                                    <Badge variant={review.status === "APPROVED" ? "default" : "secondary"} className="text-xs">
+                                                                        {review.status}
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
+                                                            <p className="text-sm text-muted-foreground mt-2">{review.comment || "Không có bình luận"}</p>
+                                                            {/* Hình ảnh review */}
+                                                            {review.images && Array.isArray(review.images) && review.images.length > 0 && (
+                                                                <div className="flex gap-2 mt-3 flex-wrap">
+                                                                    {review.images.map((img) => (
+                                                                        <img key={img.id} src={img.url} alt="Review" className="w-20 h-20 object-cover rounded-md border" loading="lazy" />
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                            <div className="flex items-center gap-3 mt-3">
+                                                                <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">
+                                                                    Hữu ích
+                                                                </Button>
+                                                                <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">
+                                                                    Trả lời
+                                                                </Button>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <p className="text-sm text-muted-foreground mt-2">
-                                                    {i === 1
-                                                        ? "Sản phẩm rất tốt, chất lượng vượt mong đợi. Giao hàng nhanh, đóng gói cẩn thận. Sẽ ủng hộ shop lần sau!"
-                                                        : i === 2
-                                                        ? "Áo đẹp lắm, form chuẩn, vải mát. Đã mua lần 2 rồi, rất hài lòng!"
-                                                        : i === 3
-                                                        ? "Chất lượng ok, giá hợp lý. Giao hàng hơi lâu nhưng sản phẩm đẹp nên ok."
-                                                        : i === 4
-                                                        ? "Cho mình hỏi sản phẩm này còn màu trắng size XL không ạ?"
-                                                        : "Sản phẩm chất lượng tốt không các bạn? Đang phân vân có nên mua không."}
-                                                </p>
-                                                {/* Hình ảnh review */}
-                                                {(i === 1 || i === 2) && (
-                                                    <div className="flex gap-2 mt-3">
-                                                        <img src="https://via.placeholder.com/100" alt="Review" className="w-20 h-20 object-cover rounded-md border" />
-                                                        <img src="https://via.placeholder.com/100" alt="Review" className="w-20 h-20 object-cover rounded-md border" />
-                                                    </div>
-                                                )}
-                                                <div className="flex items-center gap-3 mt-3">
-                                                    <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">
-                                                        Hữu ích ({Math.floor(Math.random() * 20)})
-                                                    </Button>
-                                                    <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">
-                                                        Trả lời
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                                            );
+                                        } catch (err) {
+                                            console.error("Error rendering review:", err, review);
+                                            return null;
+                                        }
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="text-center py-8 text-muted-foreground">
+                                    <p>Chưa có đánh giá nào cho sản phẩm này.</p>
+                                    <p className="text-sm mt-2">Hãy là người đầu tiên đánh giá sản phẩm!</p>
+                                </div>
+                            )}
                         </div>
 
-                        <div className="text-center">
-                            <Button variant="outline">Xem thêm đánh giá</Button>
-                        </div>
+                        {reviews && reviews.length > 0 && (
+                            <div className="text-center">
+                                <Button variant="outline">Xem thêm đánh giá</Button>
+                            </div>
+                        )}
                     </TabsContent>
                 </Tabs>
             </div>

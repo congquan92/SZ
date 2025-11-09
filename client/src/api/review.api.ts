@@ -9,9 +9,9 @@ export const ReviewAPI = {
             throw error;
         }
     },
-    getReviewProductsById: async (orderItemId: number) => {
+    getReviewProductsById: async (productId: number) => {
         try {
-            const response = await axiosInstance.get(`review/product/${orderItemId}`);
+            const response = await axiosInstance.get(`review/product/${productId}`);
             return response.data;
         } catch (error) {
             console.error("Failed to fetch review products:", error);

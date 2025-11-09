@@ -19,6 +19,7 @@ import Wishlist from "@/page/Wishlist";
 import PaymentStatus from "@/page/PaymentStatus";
 import UnauthorizedAccess from "@/page/UnauthorizedAccess";
 import Order from "@/page/Order";
+import ProductCategory from "@/page/ProductCategory";
 
 function App() {
     const { fetchUser, token, user, loading } = useAuthStore();
@@ -57,6 +58,7 @@ function App() {
         { path: "/orders", element: <Order /> },
         { path: "/payment/vnpay-return", element: <PaymentStatus /> },
         { path: "/unauthorized", element: <UnauthorizedAccess /> },
+        { path: "/category/:id/:slug/:name", element: <ProductCategory /> },
         { path: "/*", element: <NotFound_404 /> },
     ];
 
