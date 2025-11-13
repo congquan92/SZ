@@ -81,6 +81,15 @@ export default function ProductDetail() {
         }
     }, [id]);
 
+    const initCalculateRating = useCallback(async () => {
+        try {
+            const data = await ReviewAPI.calculateRating(Number(id));
+            console.log("Calculated rating:", data);
+        } catch (error) {
+            console.error("Failed to calculate rating:", error);
+        }
+    }, [id]);
+
     const loadMoreReviews = useCallback(async () => {
         if (isLoadingMore || currentPage >= totalPages) return;
 
@@ -117,13 +126,14 @@ export default function ProductDetail() {
     useEffect(() => {
         initProductDetail();
         initReviews();
+        initCalculateRating();
 
         if (user) {
             initReviewsMe();
         } else {
             setMyReviews([]);
         }
-    }, [initProductDetail, initReviews, initReviewsMe, user]);
+    }, [initProductDetail, initReviews, initCalculateRating, initReviewsMe, user]);
 
     // Reset state khi product thay đổi
     useEffect(() => {

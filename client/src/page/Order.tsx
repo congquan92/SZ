@@ -35,6 +35,7 @@ export default function OrderPage() {
             setLoading(true);
             const response = await OrderAPI.getOrderAll();
             setOrders(response.data.data);
+            console.log("Fetched orders:", response.data.data);
         } catch (error) {
             console.error("Error fetching orders:", error);
         } finally {

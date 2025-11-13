@@ -37,10 +37,10 @@ const handelCancelOrder = async (orderId: number) => {
 };
 
 const canReorderStatuses: DeliveryStatus[] = ["DELIVERED", "COMPLETED", "CANCELLED", "REFUNDED"];
-function renderActions(status: DeliveryStatus, orderId: number) {
+function renderActions(status: DeliveryStatus, orderId: number, o: OrderItem) {
     // luôn có xem chi tiết
     const ViewBtn = (
-        <Button key="view" variant="secondary" size="sm" onClick={() => console.log("xem chi tiết:", orderId)}>
+        <Button key="view" variant="secondary" size="sm" onClick={() => console.log("xem chi tiết:", o)}>
             Xem chi tiết <ChevronRight className="ml-1 h-4 w-4" />
         </Button>
     );
@@ -108,8 +108,7 @@ export default function OrderSection({ status, orders }: Props) {
                                             <div className="text-sm font-medium line-clamp-1">{it.nameProductSnapShot || it.productVariantResponse.sku}</div>
                                             <div className="text-xs text-muted-foreground mt-1 flex flex-wrap gap-x-3 gap-y-1">
                                                 {it.variantSnapShot && <span className="whitespace-nowrap">Phân loại: {it.variantSnapShot}</span>}
-                                                <span className="whitespace-nowrap">Giá gốc: {formatVND(it.listPriceSnapShot)}</span>
-                                                <span className="whitespace-nowrap">Giá bán: {formatVND(it.finalPrice)}</span>
+                                                <span className="whitespace-nowrap">Giá : {formatVND(it.listPriceSnapShot)}</span>
                                             </div>
                                         </div>
 
@@ -131,15 +130,15 @@ export default function OrderSection({ status, orders }: Props) {
                         {/* Footer totals (Shopee style: dồn phải, dòng làm rõ tổng) */}
                         <div className="px-4 py-3 bg-muted/30">
                             <div className="flex flex-col items-end gap-1">
-                                {/* Nếu bạn có trường discountAmount thì show; tạm tính theo original - total - ship */}
-
                                 <div className="text-sm text-muted-foreground">
                                     Tổng tiền hàng: <span className="font-medium text-foreground">{formatVND(o.originalOrderAmount)}</span>
                                 </div>
                                 <div className="text-sm text-muted-foreground">
-                                    Giảm giá: <span className="font-medium text-foreground">{formatVND(o.originalOrderAmount - o.totalAmount)}</span>
+                                    Phí vận chuyển: <span className="font-medium text-foreground">{formatVND(o.totalFeeShip)}</span>
                                 </div>
-
+                                <div className="text-sm text-muted-foreground">
+                                    Giảm giá voucher: - <span className="font-medium text-foreground">{formatVND(o.discountValue)}</span>
+                                </div>
                                 <Separator className="my-1" />
 
                                 <div className="text-base">
@@ -149,7 +148,7 @@ export default function OrderSection({ status, orders }: Props) {
                         </div>
 
                         {/* Action bar (được điều kiện hoá) */}
-                        <div className="flex flex-wrap items-center justify-end gap-2 px-4 py-3">{renderActions(status, o.id)}</div>
+                        <div className="flex flex-wrap items-center justify-end gap-2 px-4 py-3">{renderActions(status, o.id, o)}</div>
                     </Card>
                 ))}
             </div>

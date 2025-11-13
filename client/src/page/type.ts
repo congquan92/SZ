@@ -138,4 +138,6 @@ export interface OrderItem {
     paymentStatus: "PAID" | "UNPAID" | "REFUNDED";
     paymentType: "BANK_TRANSFER" | "CASH" | "QR_CODE";
     totalAmount: number;
+    totalFeeShip: number;
+    discountValue: number;
 }

@@ -80,4 +80,15 @@ export const ReviewAPI = {
             throw error;
         }
     },
+
+    // calculate rating
+    calculateRating: async (productId: number) => {
+        try {
+            const response = await axiosInstance.post(`/review/calculator/${productId}/rating`);
+            return response.data;
+        } catch (error) {
+            console.error("Failed to calculate rating:", error);
+            throw error;
+        }
+    },
 };
