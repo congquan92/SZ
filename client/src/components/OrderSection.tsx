@@ -8,6 +8,8 @@ import { ChevronRight } from "lucide-react";
 import { OrderAPI } from "@/api/order.api";
 
 import ReviewDialog from "@/components/ReviewDialog";
+import { toast } from "sonner";
+import { Link } from "react-router-dom";
 
 const STATUS_HEADER: Record<DeliveryStatus, string> = {
     PENDING: "Chờ xử lý",
@@ -31,42 +33,59 @@ const statusTone: Record<DeliveryStatus, string> = {
     REFUNDED: "bg-rose-50 text-rose-700 border-rose-200",
 };
 const handelCancelOrder = async (orderId: number) => {
-    console.log("huỷ đơn:", orderId);
-    const data = await OrderAPI.cancelOrder(orderId);
-    console.log("Kết quả huỷ đơn:", data);
+    try {
+        await OrderAPI.cancelOrder(orderId);
+        toast.success("Huỷ đơn hàng thành công.");
+    } catch {
+        toast.error("Huỷ đơn hàng thất bại.");
+    }
+};
+const handelCompletedOrder = async (orderId: number) => {
+    try {
+        await OrderAPI.completeOrder(orderId);
+        toast.success("Xác nhận hoàn tất đơn hàng thành công.");
+    } catch {
+        toast.error("Xác nhận hoàn tất đơn hàng thất bại.");
+    }
 };
 
 const canReorderStatuses: DeliveryStatus[] = ["DELIVERED", "COMPLETED", "CANCELLED", "REFUNDED"];
 function renderActions(status: DeliveryStatus, orderId: number, o: OrderItem) {
-    // luôn có xem chi tiết
-    const ViewBtn = (
-        <Button key="view" variant="secondary" size="sm" onClick={() => console.log("xem chi tiết:", o)}>
-            Xem chi tiết <ChevronRight className="ml-1 h-4 w-4" />
-        </Button>
-    );
+    // luôn có xem xem sản phẩm
+    // const ViewBtn = (
+    //     <Button key="view" variant="secondary" size="sm" onClick={() => console.log("xem sản phẩm:", o)}>
+    //         Xem sản phẩm <ChevronRight className="ml-1 h-4 w-4" />
+    //     </Button>
+    // );
 
-    // PENDING: chỉ có Huỷ đơn + Xem chi tiết
+    // PENDING: chỉ có Huỷ đơn
     if (status === "PENDING") {
         return [
             <Button key="cancel" variant="outline" size="sm" className="border-rose-300 text-rose-700 hover:bg-rose-50" onClick={() => handelCancelOrder(orderId)}>
                 Huỷ đơn
             </Button>,
-            ViewBtn,
         ];
     }
 
-    // DELIVERED, COMPLETED, CANCELLED, REFUNDED: có Mua lại + Xem chi tiết
+    // if (status === "COMPLETED" && o.paymentStatus === "PAID") {
+    //     return [
+    //         <Button key="completed" variant="outline" size="sm" className="border-primary text-primary hover:bg-primary/10" onClick={() => handelCompletedOrder(orderId)}>
+    //             Xác nhận hoàn tất
+    //         </Button>,
+    //     ];
+    // }
+
+    // DELIVERED, CANCELLED, REFUNDED: có Mua lại
     if (canReorderStatuses.includes(status)) {
         return [
             <Button key="reorder" variant="outline" size="sm" onClick={() => console.log("mua lại:", orderId)}>
                 Mua lại
             </Button>,
-            ViewBtn,
         ];
     }
 
-    // CONFIRMED, PACKED, SHIPPED: chỉ Xem chi tiết
-    return [ViewBtn];
+    // CONFIRMED, PACKED, SHIPPED: chỉ Xem sản phẩm
+    return [];
 }
 
 type Props = { status: DeliveryStatus; orders: OrderItem[] };
@@ -103,16 +122,16 @@ export default function OrderSection({ status, orders }: Props) {
                             {o.orderItemResponses.map((it, idx) => (
                                 <div key={it.orderItemId} className={"px-4 py-3 " + (idx !== o.orderItemResponses.length - 1 ? "border-b" : "")}>
                                     <div className="flex items-center gap-3">
-                                        <img src={it.urlImageSnapShot} alt={it.nameProductSnapShot || it.productVariantResponse.sku} className="size-16 object-cover rounded-md border bg-white" />
+                                        <img src={it.urlImageSnapShot} alt={it.nameProductSnapShot} className="size-16 object-cover rounded-md border bg-white" />
                                         <div className="flex-1 min-w-0">
-                                            <div className="text-sm font-medium line-clamp-1">{it.nameProductSnapShot || it.productVariantResponse.sku}</div>
+                                            <div className="text-sm font-medium line-clamp-1">{it.nameProductSnapShot}</div>
                                             <div className="text-xs text-muted-foreground mt-1 flex flex-wrap gap-x-3 gap-y-1">
-                                                {it.variantSnapShot && <span className="whitespace-nowrap">Phân loại: {it.variantSnapShot}</span>}
+                                                {it.productVariantResponse.sku && <span className="whitespace-nowrap">SKU : {it.productVariantResponse.sku}</span>}
+                                                <span className="whitespace-nowrap">{it.productVariantResponse.variantAttributes.map((attr) => attr.attribute + ": " + attr.value).join(", ")}</span>
                                                 <span className="whitespace-nowrap">Giá : {formatVND(it.listPriceSnapShot)}</span>
                                             </div>
+                                            <div className="text-sm text-muted-foreground whitespace-nowrap">x{it.quantity}</div>
                                         </div>
-
-                                        <div className="text-sm text-muted-foreground whitespace-nowrap">x{it.quantity}</div>
 
                                         <div className="text-sm font-semibold w-28 text-right">{formatVND(it.finalPrice * it.quantity)}</div>
                                     </div>
@@ -123,26 +142,52 @@ export default function OrderSection({ status, orders }: Props) {
                                             <ReviewDialog orderItemId={it.orderItemId} productName={it.nameProductSnapShot || it.productVariantResponse.sku} productImage={it.urlImageSnapShot} />
                                         </div>
                                     )}
+                                    <div className="mt-3 flex justify-end">
+                                        <Link to={`/product`}>
+                                            <Button variant="link" size="sm">
+                                                Xem sản phẩm <ChevronRight className="ml-1" />
+                                            </Button>
+                                        </Link>
+                                    </div>
                                 </div>
                             ))}
                         </div>
 
                         {/* Footer totals (Shopee style: dồn phải, dòng làm rõ tổng) */}
-                        <div className="px-4 py-3 bg-muted/30">
-                            <div className="flex flex-col items-end gap-1">
-                                <div className="text-sm text-muted-foreground">
-                                    Tổng tiền hàng: <span className="font-medium text-foreground">{formatVND(o.originalOrderAmount)}</span>
+                        <div className="flex flex-col md:flex-row border-t">
+                            <div className="px-4 py-3 bg-muted/20 flex-1">
+                                <div className="text-xs text-muted-foreground mb-1">Địa chỉ nhận hàng</div>
+                                <div className="space-y-1">
+                                    <div className="text-sm font-medium">
+                                        {o.customerName} • {o.customerPhone}
+                                    </div>
+                                    <div className="text-sm text-muted-foreground">
+                                        {o.deliveryAddress}, {o.deliveryProvinceName}
+                                    </div>
+                                    {o.note && (
+                                        <div className="text-sm text-muted-foreground">
+                                            <span className="font-medium">Ghi chú:</span> {o.note}
+                                        </div>
+                                    )}
                                 </div>
-                                <div className="text-sm text-muted-foreground">
-                                    Phí vận chuyển: <span className="font-medium text-foreground">{formatVND(o.totalFeeShip)}</span>
-                                </div>
-                                <div className="text-sm text-muted-foreground">
-                                    Giảm giá voucher: - <span className="font-medium text-foreground">{formatVND(o.discountValue)}</span>
-                                </div>
-                                <Separator className="my-1" />
+                            </div>
 
-                                <div className="text-base">
-                                    Thành tiền: <span className="font-bold text-foreground"> {formatVND(o.totalAmount)}</span>
+                            <div className="px-4 py-3 bg-muted/30 md:min-w-[300px]">
+                                <div className="flex flex-col items-end gap-1">
+                                    <div className="text-sm text-muted-foreground">
+                                        Tổng tiền hàng: <span className="font-medium text-foreground">{formatVND(o.originalOrderAmount)}</span>
+                                    </div>
+                                    <div className="text-sm text-muted-foreground">
+                                        Phí vận chuyển: <span className="font-medium text-foreground">{formatVND(o.totalFeeShip)}</span>
+                                    </div>
+                                    <div className="text-sm text-muted-foreground">
+                                        Giảm giá voucher: - <span className="font-medium text-foreground">{formatVND(o.discountValue)}</span>
+                                    </div>
+                                    <Separator className="my-1" />
+
+                                    <div className="text-base">
+                                        Thành tiền: <span className="font-bold text-foreground"> {formatVND(o.totalAmount)}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>

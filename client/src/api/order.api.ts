@@ -56,4 +56,13 @@ export const OrderAPI = {
             throw error;
         }
     },
+    completeOrder: async (orderId: number) => {
+        try {
+            const response = await axiosInstance.put(`/orders/complete/${orderId}`);
+            return response.data;
+        } catch (error) {
+            console.error("Complete order failed", error);
+            throw error;
+        }
+    },
 };

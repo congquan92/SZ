@@ -580,16 +580,12 @@ export default function ProductDetail() {
                                                                     })}
                                                                 </div>
                                                             )}
-                                                            <div className="flex items-center gap-3 mt-3">
-                                                                <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">
-                                                                    <Heart /> Thích
+
+                                                            {isMyReview && (
+                                                                <Button variant="ghost" size="sm" className="h-8 px-2 text-xs text-blue-600 hover:text-blue-700" onClick={() => handelEditReview(review)}>
+                                                                    Chỉnh sửa
                                                                 </Button>
-                                                                {isMyReview && (
-                                                                    <Button variant="ghost" size="sm" className="h-8 px-2 text-xs text-blue-600 hover:text-blue-700" onClick={() => handelEditReview(review)}>
-                                                                        Chỉnh sửa
-                                                                    </Button>
-                                                                )}
-                                                            </div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
