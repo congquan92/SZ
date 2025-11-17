@@ -77,9 +77,9 @@ function renderActions(status: DeliveryStatus, orderId: number, order: OrderItem
     return [];
 }
 
-type Props = { status: DeliveryStatus; orders: OrderItem[] };
+type Props = { status: DeliveryStatus; orders: OrderItem[]; onRefresh?: () => void };
 
-export default function OrderSection({ status, orders }: Props) {
+export default function OrderSection({ status, orders, onRefresh }: Props) {
     return (
         <section className="space-y-3">
             {/* Section heading */}
@@ -127,7 +127,7 @@ export default function OrderSection({ status, orders }: Props) {
                                     {/* Button đánh giá - chỉ hiện với đơn COMPLETED và sản phẩm chưa được đánh giá */}
                                     {status === "COMPLETED" && !it.isReviewed && (
                                         <div className="mt-3 flex justify-end">
-                                            <ReviewDialog orderItemId={it.orderItemId} productName={it.nameProductSnapShot || it.productVariantResponse.sku} productImage={it.urlImageSnapShot} />
+                                            <ReviewDialog orderItemId={it.orderItemId} productName={it.nameProductSnapShot || it.productVariantResponse.sku} productImage={it.urlImageSnapShot} onSuccess={onRefresh} />
                                         </div>
                                     )}
                                 </div>

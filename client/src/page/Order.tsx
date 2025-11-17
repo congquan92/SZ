@@ -108,7 +108,7 @@ export default function OrderPage() {
                 </div>
 
                 {/* Content */}
-                <div className="mt-6 space-y-6">{loading ? <LoadingState /> : grouped.length === 0 ? <EmptyState /> : grouped.map((g) => <OrderSection key={g.status} status={g.status} orders={g.orders} />)}</div>
+                <div className="mt-6 space-y-6">{loading ? <LoadingState /> : grouped.length === 0 ? <EmptyState /> : grouped.map((g) => <OrderSection key={g.status} status={g.status} orders={g.orders} onRefresh={init} />)}</div>
             </Tabs>
         </div>
     );

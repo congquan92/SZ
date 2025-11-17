@@ -7,7 +7,7 @@ import { Camera, Star, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
-export default function ReviewDialog({ orderItemId, productName, productImage }: { orderItemId: number; productName: string; productImage: string }) {
+export default function ReviewDialog({ orderItemId, productName, productImage, onSuccess }: { orderItemId: number; productName: string; productImage: string; onSuccess?: () => void }) {
     const [open, setOpen] = useState(false);
     const [rating, setRating] = useState(5);
     const [comment, setComment] = useState("");
@@ -105,6 +105,11 @@ export default function ReviewDialog({ orderItemId, productName, productImage }:
 
             // Clean up preview URLs
             localPreviews.forEach((url) => URL.revokeObjectURL(url));
+
+            // Refresh order list
+            if (onSuccess) {
+                onSuccess();
+            }
 
             setOpen(false);
             // Reset form
