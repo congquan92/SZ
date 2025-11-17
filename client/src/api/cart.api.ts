@@ -1,4 +1,5 @@
 import { axiosInstance } from "@/lib/axios";
+import type { AxiosError } from "axios";
 export const CartAPI = {
     getCart: async (size: number) => {
         try {
@@ -32,6 +33,11 @@ export const CartAPI = {
             const response = await axiosInstance.post(`/cart/add`, { productVariantId, quantity });
             return response.data;
         } catch (error) {
+            const err = error as AxiosError;
+            if (err.response?.status === 401) {
+                throw new Error("UNAUTH");
+            }
+
             console.error("Add cart item failed", error);
             throw error;
         }

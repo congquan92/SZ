@@ -190,14 +190,6 @@ export default function Payment() {
                 return;
             }
 
-            // console.log("Placing order:", {
-            //     cartItems,
-            //     address: selectedAddress,
-            //     note,
-            //     payment,
-            //     total,
-            // });
-
             // Tạo đơn hàng
             const orderResponse = await OrderAPI.orderAdd(
                 selectedAddress.customerName,

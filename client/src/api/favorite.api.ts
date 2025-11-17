@@ -1,10 +1,15 @@
 import { axiosInstance } from "@/lib/axios";
+import type { AxiosError } from "axios";
 export const FavoriteAPI = {
     getFavorites: async () => {
         try {
             const response = await axiosInstance.get(`/favorites/listForMe`);
             return response.data;
         } catch (error) {
+            const err = error as AxiosError;
+            if (err.response?.status === 401) {
+                throw new Error("UNAUTH");
+            }
             console.error("Get favorites failed", error);
             throw error;
         }

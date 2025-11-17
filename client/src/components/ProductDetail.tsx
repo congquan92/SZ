@@ -9,7 +9,7 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { CircleDollarSign, ShoppingCart, Star, FileText, Heart } from "lucide-react";
+import { CircleDollarSign, ShoppingCart, Star, FileText } from "lucide-react";
 import { CartAPI } from "@/api/cart.api";
 import { useCartStore } from "@/stores/useCartStore";
 import { toast } from "sonner";
@@ -237,6 +237,10 @@ export default function ProductDetail() {
             fetchCart();
             toast.success("Đã thêm vào giỏ hàng");
         } catch (error) {
+            if (error instanceof Error && error.message === "UNAUTH") {
+                toast.error("Vui lòng đăng nhập để mua hàng");
+                return;
+            }
             console.error("Error adding to cart:", error);
             toast.error("Thêm vào giỏ hàng thất bại. Vui lòng thử lại.");
         }
@@ -253,6 +257,10 @@ export default function ProductDetail() {
             fetchCart();
             navigate("/cart");
         } catch (error) {
+            if (error instanceof Error && error.message === "UNAUTH") {
+                toast.error("Vui lòng đăng nhập để mua hàng");
+                return;
+            }
             console.error("Error adding to cart:", error);
             toast.error("Thêm vào giỏ hàng thất bại. Vui lòng thử lại.");
         }

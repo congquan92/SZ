@@ -33,6 +33,10 @@ export default function Wishlist() {
             const res = await FavoriteAPI.getFavorites();
             setFavorites(res.data);
         } catch (error) {
+            if (error instanceof Error && error.message === "UNAUTH") {
+                toast.error("Vui lòng đăng nhập để xem danh sách yêu thích");
+                return;
+            }
             console.error("Failed to fetch favorites:", error);
             toast.error("Không thể tải danh sách yêu thích");
         } finally {

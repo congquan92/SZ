@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from "@/components/ui/carousel";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { calculateDiscountPercent, findVariant, formatVND, hasVariantWithSelection, toSlug } from "@/lib/helper";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { CircleDollarSign, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { CartAPI } from "@/api/cart.api";
@@ -20,6 +20,7 @@ type Props = {
 
 export default function ProductDialog({ open, onClose, product }: Props) {
     const { fetchCart } = useCartStore();
+    const navigate = useNavigate();
 
     // --- Extract attributes ---
     const colorAttr = useMemo(() => product?.attributes.find((a) => a.name.toLowerCase().includes("màu")) ?? null, [product?.attributes]);
@@ -127,23 +128,36 @@ export default function ProductDialog({ open, onClose, product }: Props) {
     const handleAddToCart = async () => {
         try {
             if (!variant || !inStock) return;
-            // TODO: Integrate with cart API
-            console.log("ADD_TO_CART", {
-                productId: product.id,
-                variantId: variant.id,
-                selections: pick,
-                quantity: qty,
-            });
-
             await CartAPI.addCartItem(variant.id, qty);
             // Sync with cart store
             fetchCart();
             toast.success("Đã thêm vào giỏ hàng");
         } catch (error) {
+            if (error instanceof Error && error.message === "UNAUTH") {
+                toast.error("Vui lòng đăng nhập để mua hàng");
+                return;
+            }
             console.error("Error adding to cart:", error);
             toast.error("Thêm vào giỏ hàng thất bại. Vui lòng thử lại.");
         } finally {
             onClose();
+        }
+    };
+
+    const handleBuyNow = async () => {
+        try {
+            if (!variant || !inStock) return;
+            await CartAPI.addCartItem(variant.id, qty);
+            // Sync with cart store
+            fetchCart();
+            navigate("/cart");
+        } catch (error) {
+            if (error instanceof Error && error.message === "UNAUTH") {
+                toast.error("Vui lòng đăng nhập để mua hàng");
+                return;
+            }
+            console.error("Error adding to cart:", error);
+            toast.error("Thêm vào giỏ hàng thất bại. Vui lòng thử lại.");
         }
     };
 
@@ -277,7 +291,7 @@ export default function ProductDialog({ open, onClose, product }: Props) {
                                 <Button className="flex-1 w-full sm:w-auto h-10" disabled={!variant || !inStock} onClick={handleAddToCart}>
                                     <ShoppingCart /> {variant ? "Thêm vào giỏ hàng" : "Vui lòng chọn phân loại"}
                                 </Button>
-                                <Button className="flex-1 w-full sm:w-auto h-10">
+                                <Button className="flex-1 w-full sm:w-auto h-10" disabled={!variant || !inStock} onClick={handleBuyNow}>
                                     <CircleDollarSign /> Mua ngay
                                 </Button>
                             </div>
