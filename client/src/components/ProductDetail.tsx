@@ -52,6 +52,10 @@ export default function ProductDetail() {
     const [editReviewOpen, setEditReviewOpen] = useState(false);
     const [selectedReview, setSelectedReview] = useState<Review | null>(null);
 
+    // Rating statistics và filter
+    const [ratingStats, setRatingStats] = useState<{ rating: number; totalReview: number }[]>([]);
+    const [selectedRatingFilter, setSelectedRatingFilter] = useState<number | null>(null);
+
     const initProductDetail = useCallback(async () => {
         try {
             const data = await ProductAPI.getProductById(Number(id));
@@ -92,8 +96,13 @@ export default function ProductDetail() {
         try {
             const data = await ReviewAPI.calculateRating(Number(id));
             console.log("Calculated rating:", data);
+            // Lưu rating statistics từ API
+            if (data.data && Array.isArray(data.data)) {
+                setRatingStats(data.data);
+            }
         } catch (error) {
             console.error("Failed to calculate rating:", error);
+            setRatingStats([]);
         }
     }, [id]);
 
@@ -222,6 +231,12 @@ export default function ProductDetail() {
 
         return [...myReviews, ...otherReviews];
     }, [myReviews, reviews]);
+
+    // Filter reviews theo rating đã chọn
+    const filteredReviews = useMemo(() => {
+        if (!selectedRatingFilter) return allReviews;
+        return allReviews.filter((review) => review.rating === selectedRatingFilter);
+    }, [allReviews, selectedRatingFilter]);
 
     // --- Computed values giống ProductDialog ---
     if (!product) return null;
@@ -488,7 +503,11 @@ export default function ProductDetail() {
                     <TabsContent value="reviews" className="mt-6 space-y-8">
                         <ProductReviews
                             avgRating={product.avgRating ?? 0}
-                            allReviews={allReviews}
+                            allReviews={filteredReviews}
+                            totalReviews={allReviews.length}
+                            ratingStats={ratingStats}
+                            selectedRatingFilter={selectedRatingFilter}
+                            onRatingFilterChange={setSelectedRatingFilter}
                             myReviews={myReviews}
                             user={user}
                             currentPage={currentPage}

@@ -4,10 +4,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import type { Review } from "./types";
 import { renderStars } from "@/lib/helper.tsx";
+import { Star } from "lucide-react";
 
 interface ProductReviewsProps {
     avgRating: number;
     allReviews: Review[];
+    totalReviews: number;
+    ratingStats: { rating: number; totalReview: number }[];
+    selectedRatingFilter: number | null;
+    onRatingFilterChange: (rating: number | null) => void;
     myReviews: Review[];
     user: { id: number } | null;
     currentPage: number;
@@ -18,33 +23,72 @@ interface ProductReviewsProps {
     onMediaClick: (url: string, isVideo: boolean) => void;
 }
 
-export default function ProductReviews({ avgRating, allReviews, myReviews, user, currentPage, totalPages, isLoadingMore, onLoadMore, onEditReview, onMediaClick }: ProductReviewsProps) {
+export default function ProductReviews({
+    avgRating,
+    allReviews,
+    totalReviews,
+    ratingStats,
+    selectedRatingFilter,
+    onRatingFilterChange,
+    myReviews,
+    user,
+    currentPage,
+    totalPages,
+    isLoadingMore,
+    onLoadMore,
+    onEditReview,
+    onMediaClick,
+}: ProductReviewsProps) {
     return (
-        <div>
+        <div className="space-y-6">
             {/* Tổng quan đánh giá */}
             <div className="bg-muted/30 rounded-lg p-6">
                 <div className="flex flex-col md:flex-row gap-6 items-center">
                     <div className="text-center">
                         <div className="text-5xl font-bold">{avgRating.toFixed(1)}</div>
                         <div className="flex justify-center mt-2">{renderStars(avgRating)}</div>
-                        <div className="text-sm text-muted-foreground mt-1">{allReviews?.length || 0} đánh giá</div>
+                        <div className="text-sm text-muted-foreground mt-1">{totalReviews} đánh giá</div>
                     </div>
                     <Separator orientation="vertical" className="h-24 hidden md:block" />
                     <div className="flex-1 w-full space-y-2">
                         {[5, 4, 3, 2, 1].map((star) => {
-                            const count = allReviews?.filter((r) => r.rating === star).length || 0;
-                            const percentage = allReviews && allReviews.length > 0 ? (count / allReviews.length) * 100 : 0;
+                            // Lấy số lượng từ API ratingStats
+                            const statItem = ratingStats.find((stat) => stat.rating === star);
+                            const count = statItem?.totalReview || 0;
+                            const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
+
                             return (
                                 <div key={star} className="flex items-center gap-3">
                                     <span className="text-sm w-12">{star} sao</span>
                                     <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                                        <div className="h-full bg-yellow-500" style={{ width: `${percentage}%` }} />
+                                        <div className="h-full bg-yellow-500 transition-all" style={{ width: `${percentage}%` }} />
                                     </div>
                                     <span className="text-sm text-muted-foreground w-12 text-right">{count}</span>
                                 </div>
                             );
                         })}
                     </div>
+                </div>
+            </div>
+
+            {/* Bộ lọc theo sao - giống Shopee */}
+            <div className="border-t border-b py-4">
+                <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm font-medium mr-2">Lọc theo:</span>
+                    <Button variant={selectedRatingFilter === null ? "default" : "outline"} size="sm" onClick={() => onRatingFilterChange(null)} className="h-8">
+                        Tất cả
+                    </Button>
+                    {[5, 4, 3, 2, 1].map((star) => {
+                        const statItem = ratingStats.find((stat) => stat.rating === star);
+                        const count = statItem?.totalReview || 0;
+                        const isSelected = selectedRatingFilter === star;
+
+                        return (
+                            <Button key={star} variant={isSelected ? "default" : "outline"} size="sm" onClick={() => onRatingFilterChange(star)} disabled={count === 0} className="h-8">
+                                {star} <Star className="w-3 h-3 ml-1 fill-current" /> ({count})
+                            </Button>
+                        );
+                    })}
                 </div>
             </div>
 
