@@ -73,3 +73,14 @@ export function toSlug(str: string): string {
         .replace(/[^a-z0-9]+/g, "-") // thay ký tự không hợp lệ bằng "-"
         .replace(/^-+|-+$/g, ""); // xóa "-" thừa đầu/cuối
 }
+
+export function formatDate(v?: string) {
+    if (!v || v.length !== 14) return "-";
+    const yyyy = v.slice(0, 4);
+    const MM = v.slice(4, 6);
+    const dd = v.slice(6, 8);
+    const hh = v.slice(8, 10);
+    const mm = v.slice(10, 12);
+    const ss = v.slice(12, 14);
+    return `${hh}:${mm}:${ss} ${dd}/${MM}/${yyyy}`;
+}

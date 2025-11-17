@@ -49,6 +49,8 @@ function App() {
         { path: "/wishlist", element: <Wishlist /> },
         { path: "/orders", element: <Order /> },
         { path: "/payment/vnpay-return", element: <PaymentStatus /> },
+        { path: "/payment/momo-return", element: <PaymentStatus /> },
+        { path: "/payment/cash-return", element: <PaymentStatus /> },
         { path: "/unauthorized", element: <UnauthorizedAccess /> },
         { path: "/category/:id/:slug/:name", element: <ProductCategory /> },
         { path: "/*", element: <NotFound_404 /> },

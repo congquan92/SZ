@@ -4,8 +4,13 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle2, XCircle, Clock, ExternalLink } from "lucide-react";
+import { CheckCircle2, XCircle, Clock, ExternalLink, Package } from "lucide-react";
 import { axiosInstance } from "@/lib/axios";
+import { formatDate, formatVND } from "@/lib/helper";
+
+// ============ TYPES ============
+type PaymentType = "VNPAY" | "MOMO" | "CASH";
+type PaymentStatus = "success" | "fail" | "pending";
 
 type VerifyResult = {
     success: boolean;
@@ -13,21 +18,6 @@ type VerifyResult = {
     orderId?: string;
     transactionId?: string;
 };
-
-function formatAmount(v?: string) {
-    const n = Number(v || 0) / 100;
-    return n.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
-}
-function formatDate(v?: string) {
-    if (!v || v.length !== 14) return "-";
-    const yyyy = v.slice(0, 4);
-    const MM = v.slice(4, 6);
-    const dd = v.slice(6, 8);
-    const hh = v.slice(8, 10);
-    const mm = v.slice(10, 12);
-    const ss = v.slice(12, 14);
-    return `${hh}:${mm}:${ss} ${dd}/${MM}/${yyyy}`;
-}
 
 function vnpResponseMessage(code?: string) {
     switch (code) {
@@ -43,6 +33,7 @@ function vnpResponseMessage(code?: string) {
             return `Mã phản hồi: ${code || "-"}`;
     }
 }
+
 function vnpTxnStatusMessage(st?: string) {
     switch (st) {
         case "00":
@@ -54,81 +45,113 @@ function vnpTxnStatusMessage(st?: string) {
     }
 }
 
+// ============ COMPONENT ============
+
 export default function PaymentStatus() {
     const location = useLocation();
     const navigate = useNavigate();
 
-    // ✅ 1) Lưu query + full URL NGAY LẬP TỨC (phải gọi hooks trước mọi return)
-    const originalSearchRef = useRef(location.search);
-    const rawUrlRef = useRef(typeof window !== "undefined" ? window.location.href : "");
+    // Xác định loại thanh toán từ URL
+    const paymentType: PaymentType = useMemo(() => {
+        if (location.pathname.includes("/cash-return")) return "CASH";
+        if (location.pathname.includes("/momo-return")) return "MOMO";
+        return "VNPAY";
+    }, [location.pathname]);
 
-    // Dùng params từ query đã lưu
+    // Lưu query params gốc (trước khi bị xóa khỏi URL)
+    const originalSearchRef = useRef(location.search);
     const params = useMemo(() => new URLSearchParams(originalSearchRef.current), []);
 
+    // Data cho từng loại thanh toán
+    const cashOrderId = location.state?.orderId || params.get("orderId");
     const vnp_ResponseCode = params.get("vnp_ResponseCode") || undefined;
     const vnp_TransactionStatus = params.get("vnp_TransactionStatus") || undefined;
 
-    // Heuristic client-side (tạm trước verify)
-    const initial = vnp_ResponseCode === "00" && vnp_TransactionStatus === "00" ? "success" : vnp_TransactionStatus === "02" ? "pending" : "fail";
+    // Xác định trạng thái ban đầu
+    const initialStatus: PaymentStatus = useMemo(() => {
+        if (paymentType === "CASH") return "success";
+        if (vnp_ResponseCode === "00" && vnp_TransactionStatus === "00") return "success";
+        if (vnp_TransactionStatus === "02") return "pending";
+        return "fail";
+    }, [paymentType, vnp_ResponseCode, vnp_TransactionStatus]);
 
-    const [status, setStatus] = useState<"success" | "fail" | "pending">(initial);
+    const [status, setStatus] = useState<PaymentStatus>(initialStatus);
     const [verifying, setVerifying] = useState(true);
     const [verify, setVerify] = useState<VerifyResult | null>(null);
 
-    // ✅ 2) Không có query -> đá sang /unauthorized (replace) để khỏi back
+    // Redirect nếu thiếu dữ liệu cần thiết
     useEffect(() => {
-        if (!location.search || location.search === "") {
+        if (paymentType !== "CASH" && !location.search) {
             navigate("/unauthorized", { replace: true });
         }
-    }, [location.search, navigate]);
 
-    // ✅ 3) Ẩn query khỏi address bar (không tạo history mới)
+        // CASH: redirect nếu không có orderId
+        if (paymentType === "CASH" && !cashOrderId) {
+            navigate("/unauthorized", { replace: true });
+        }
+    }, [location.search, navigate, paymentType, cashOrderId]);
+
+    // Ẩn query params khỏi URL bar (để bảo mật)
     useEffect(() => {
-        if (!location.search) return; // Đã bị redirect, skip
-
-        // Log full URL để debug/lưu lại khi cần
-        console.log("[VNPAY RAW URL]", rawUrlRef.current);
+        if (paymentType === "CASH" || !location.search) return;
 
         if (typeof window !== "undefined") {
-            const clean = window.location.pathname; // /payment/vnpay-return
-            window.history.replaceState({}, "", clean);
+            window.history.replaceState({}, "", window.location.pathname);
         }
-    }, [location.search]);
+    }, [location.search, paymentType]);
 
-    // ✅ 4) Verify với server bằng query gốc (URL trên thanh địa chỉ đã sạch)
+    // Verify thanh toán với server
     useEffect(() => {
-        if (!originalSearchRef.current) return; // Không có query thì skip
+        // COD không cần verify vì đã tạo đơn thành công
+        if (paymentType === "CASH") {
+            setVerifying(false);
+            setVerify({
+                success: true,
+                message: "Đơn hàng COD đã được tạo thành công. Vui lòng thanh toán khi nhận hàng.",
+                orderId: cashOrderId?.toString(),
+            });
+            return;
+        }
+
+        // Online payment cần verify với server
+        if (!originalSearchRef.current) return;
 
         let mounted = true;
-        (async () => {
+        const verifyPayment = async () => {
             try {
-                const url = `/payment/vnpay-return${originalSearchRef.current}`;
+                const url = `/payment/${paymentType.toLowerCase()}-return${originalSearchRef.current}`;
                 const res = await axiosInstance.get<VerifyResult>(url);
+
                 if (!mounted) return;
 
                 setVerify(res.data);
-                if (res.data.success) setStatus("success");
-                else {
+
+                if (res.data.success) {
+                    setStatus("success");
+                } else {
                     const isPending = vnp_TransactionStatus === "02" || /đang xử lý|pending/i.test(res.data.message || "");
                     setStatus(isPending ? "pending" : "fail");
                 }
-            } catch {
+            } catch (error) {
                 if (!mounted) return;
+                console.error("Verify payment error:", error);
                 setVerify({
-                    success: initial === "success",
-                    message: "Không xác thực được với server. Hiển thị tạm theo URL.",
+                    success: initialStatus === "success",
+                    message: "Không xác thực được với server. Hiển thị tạm theo dữ liệu URL.",
                 });
             } finally {
                 if (mounted) setVerifying(false);
             }
-        })();
+        };
+
+        verifyPayment();
         return () => {
             mounted = false;
         };
-    }, [initial, vnp_TransactionStatus]);
+    }, [initialStatus, vnp_TransactionStatus, paymentType, cashOrderId]);
 
-    // Nếu đang redirect thì hiển thị loading
-    if (!location.search) {
+    // Loading state khi đang redirect
+    if (paymentType !== "CASH" && !location.search) {
         return (
             <div className="container max-w-3xl mx-auto p-4">
                 <Card className="mt-6">
@@ -141,12 +164,62 @@ export default function PaymentStatus() {
         );
     }
 
+    // UI data
     const Icon = status === "success" ? CheckCircle2 : status === "fail" ? XCircle : Clock;
-    const title = status === "success" ? "Thanh toán thành công 🎉" : status === "pending" ? "Đang xử lý ⏳" : "Thanh toán thất bại 😿";
-
     const badgeVariant = status === "success" ? "default" : status === "pending" ? "secondary" : "destructive";
 
-    const amount = formatAmount(params.get("vnp_Amount") || undefined);
+    const title = paymentType === "CASH" ? "Đặt hàng thành công 🎉" : status === "success" ? "Thanh toán thành công 🎉" : status === "pending" ? "Đang xử lý ⏳" : "Thanh toán thất bại 😿";
+
+    // CASH: hiển thị thông tin đơn giản hơn
+    if (paymentType === "CASH") {
+        return (
+            <div className="container max-w-3xl mx-auto p-4">
+                <Card className="mt-6">
+                    <CardHeader className="flex flex-row items-center gap-3">
+                        <Package className="h-8 w-8 text-green-600" />
+                        <div className="flex-1">
+                            <CardTitle className="text-xl">{title}</CardTitle>
+                            <div className="text-sm text-muted-foreground">{verify?.message || "Đơn hàng của bạn đã được tạo. Vui lòng thanh toán khi nhận hàng."}</div>
+                        </div>
+                        <Badge variant="default" className="ml-auto">
+                            COD
+                        </Badge>
+                    </CardHeader>
+                    <Separator />
+                    <CardContent className="pt-6">
+                        <div className="space-y-4">
+                            <Field label="Mã đơn hàng" value={`CASH#${cashOrderId?.toString()}`} copyable />
+                            <Field label="Phương thức thanh toán" value="Thanh toán khi nhận hàng (COD)" />
+                            <div className="bg-muted/50 p-4 rounded-lg">
+                                <p className="text-sm font-medium mb-2">📦 Lưu ý quan trọng:</p>
+                                <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                                    <li>Vui lòng chuẩn bị đủ tiền mặt khi nhận hàng</li>
+                                    <li>Kiểm tra kỹ sản phẩm trước khi thanh toán</li>
+                                    <li>Giữ lại mã đơn hàng để tra cứu</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </CardContent>
+                    <CardFooter className="flex gap-2 justify-between flex-wrap">
+                        <div className="flex gap-2">
+                            <Link to="/product">
+                                <Button variant="secondary">Tiếp tục mua sắm</Button>
+                            </Link>
+                            <Link to="/orders">
+                                <Button variant="outline">
+                                    Xem đơn hàng
+                                    <ExternalLink className="ml-2 h-4 w-4" />
+                                </Button>
+                            </Link>
+                        </div>
+                    </CardFooter>
+                </Card>
+            </div>
+        );
+    }
+
+    // VNPAY / MOMO: hiển thị đầy đủ thông tin
+    const amount = formatVND(Number(params.get("vnp_Amount")) / 100);
     const bank = params.get("vnp_BankCode") || "-";
     const cardType = params.get("vnp_CardType") || "-";
     const orderId = params.get("vnp_TxnRef") || verify?.orderId || "-";
@@ -188,31 +261,7 @@ export default function PaymentStatus() {
                             </Button>
                         </Link>
                     </div>
-                    <Button
-                        variant="ghost"
-                        onClick={() => {
-                            // Reload để re-verify (URL vẫn sạch do đã replaceState)
-                            window.location.reload();
-                        }}
-                    >
-                        Tải lại trạng thái
-                    </Button>
                 </CardFooter>
-            </Card>
-
-            {/* Debug: hiển thị params đã parse (URL bar không còn query) */}
-            <Card className="mt-6">
-                <CardHeader>
-                    <CardTitle className="text-base">Chi tiết kỹ thuật (debug)</CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm">
-                    {Array.from(params.entries()).map(([k, v]) => (
-                        <div key={k} className="flex justify-between gap-4 py-1 border-b last:border-b-0">
-                            <span className="text-muted-foreground">{k}</span>
-                            <span className="font-mono break-all">{v}</span>
-                        </div>
-                    ))}
-                </CardContent>
             </Card>
         </div>
     );

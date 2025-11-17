@@ -34,6 +34,7 @@ export default function Payment() {
 
     const [loading, setLoading] = useState(true);
     const [isAddressDialogOpen, setIsAddressDialogOpen] = useState(false);
+    const [isProcessingPayment, setIsProcessingPayment] = useState(false); // Prevent redirect khi đang xử lý thanh toán
 
     // Payment & voucher
     const [payment, setPayment] = useState<"CASH" | "BANK_TRANSFER" | "MOMO">("CASH");
@@ -86,6 +87,7 @@ export default function Payment() {
     useEffect(() => {
         if (!user) return;
         init();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user]);
 
     // tính giá trị cần thiết cho phí vận chuyển
@@ -213,15 +215,28 @@ export default function Payment() {
                 selectedVoucher ? Number(selectedVoucher) : null
             );
 
+            if (payment === "CASH") {
+                // Set flag để prevent redirect về /cart
+                setIsProcessingPayment(true);
+
+                // Xóa giỏ hàng
+                clearCart();
+                cartItems.map((item) => removeItem(item.id));
+                // Navigate với orderId
+                navigate("/payment/cash-return", {
+                    replace: true,
+                    state: { orderId: orderResponse.data },
+                });
+                return;
+            }
+
+            // sandbox
             // Lấy link thanh toán
             const paymentResponse = await PaymentAPI.getPaymentMethods(orderResponse.data);
-
             // Xóa giỏ hàng cả khi đặt thành công hay không thành công
             clearCart();
             cartItems.map((item) => removeItem(item.id)); // Xóa từng item để đồng bộ với backend
-
             // console.log("Payment redirect link:", paymentResponse.data);
-            // Redirect đến trang thanh toán
             window.location.href = paymentResponse.data;
         } catch (error) {
             console.error("Error placing order:", error);
@@ -242,7 +257,7 @@ export default function Payment() {
         );
     }
 
-    if (cartCount === 0) {
+    if (cartCount === 0 && !isProcessingPayment) {
         navigate("/cart", { replace: true });
         return;
     }

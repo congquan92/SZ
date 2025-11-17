@@ -6,7 +6,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { renderStars } from "@/lib/helper.tsx";
 import { calculateDiscountPercent, findVariant, formatVND, hasVariantWithSelection } from "@/lib/helper";
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { CircleDollarSign, ShoppingCart, Star, FileText, Heart } from "lucide-react";
@@ -30,6 +30,7 @@ export default function ProductDetail() {
     const [currentSlide, setCurrentSlide] = useState(0);
     const { user } = useAuthStore();
     const { fetchCart } = useCartStore();
+    const navigate = useNavigate();
 
     // State sử dụng Record như ProductDialog
     const [pick, setPick] = useState<Record<string, string>>({});
@@ -241,22 +242,20 @@ export default function ProductDetail() {
         }
     };
 
-    const handleBuyNow = () => {
+    const handleBuyNow = async () => {
         if (!variant || !inStock) {
             console.warn("Không thể mua: chưa chọn đủ màu/size hoặc hết hàng");
             return;
         }
-        // TODO: Navigate to checkout
-        console.log("BUY_NOW", {
-            productId: product.id,
-            productName: product.name,
-            variantId: variant.id,
-            sku: variant.sku,
-            price: variant.price,
-            selections: pick,
-            quantity: qty,
-            totalPrice: variant.price * qty,
-        });
+        try {
+            await CartAPI.addCartItem(variant.id, qty);
+            // Sync with cart store
+            fetchCart();
+            navigate("/cart");
+        } catch (error) {
+            console.error("Error adding to cart:", error);
+            toast.error("Thêm vào giỏ hàng thất bại. Vui lòng thử lại.");
+        }
     };
 
     const handelEditReview = (review: Review) => {
