@@ -40,6 +40,14 @@ const handelCancelOrder = async (orderId: number) => {
         toast.error("Huỷ đơn hàng thất bại.");
     }
 };
+// const handelCompleteOrder = async (orderId: number) => {
+//     try {
+//         await OrderAPI.completeOrder(orderId);
+//         toast.success("Xác nhận nhận hàng thành công.");
+//     } catch {
+//         toast.error("Xác nhận nhận hàng thất bại.");
+//     }
+// };
 
 const canReorderStatuses: DeliveryStatus[] = ["DELIVERED", "COMPLETED", "CANCELLED", "REFUNDED"];
 function renderActions(status: DeliveryStatus, orderId: number, order: OrderItem) {
@@ -51,6 +59,14 @@ function renderActions(status: DeliveryStatus, orderId: number, order: OrderItem
             </Button>,
         ];
     }
+
+    // if (status === "DELIVERED" || status === "COMPLETED") {
+    //     return [
+    //         <Button key="cancel" variant="outline" size="sm" className="border-rose-300 text-rose-700 hover:bg-rose-50" onClick={() => handelCompleteOrder(orderId)}>
+    //             Xác Nhận Đã Nhận Hàng
+    //         </Button>,
+    //     ];
+    // }
 
     // DELIVERED, COMPLETED, CANCELLED, REFUNDED: có Mua lại
     if (canReorderStatuses.includes(status)) {
@@ -89,7 +105,6 @@ export default function OrderSection({ status, orders }: Props) {
 
                             <div className={"text-sm font-medium px-2 py-1 rounded border " + statusTone[status]}>{STATUS_HEADER[status]}</div>
                         </div>
-
                         {/* Items */}
                         <div>
                             {o.orderItemResponses.map((it, idx) => (
@@ -109,8 +124,8 @@ export default function OrderSection({ status, orders }: Props) {
                                         <div className="text-sm font-semibold w-28 text-right">{formatVND(it.finalPrice * it.quantity)}</div>
                                     </div>
 
-                                    {/* Button đánh giá - chỉ hiện với đơn COMPLETED */}
-                                    {status === "COMPLETED" && (
+                                    {/* Button đánh giá - chỉ hiện với đơn COMPLETED và sản phẩm chưa được đánh giá */}
+                                    {status === "COMPLETED" && !it.isReviewed && (
                                         <div className="mt-3 flex justify-end">
                                             <ReviewDialog orderItemId={it.orderItemId} productName={it.nameProductSnapShot || it.productVariantResponse.sku} productImage={it.urlImageSnapShot} />
                                         </div>
@@ -118,7 +133,6 @@ export default function OrderSection({ status, orders }: Props) {
                                 </div>
                             ))}
                         </div>
-
                         {/* Footer totals (Shopee style: dồn phải, dòng làm rõ tổng) */}
                         <div className="px-4 py-3 bg-muted/30 md:min-w-[300px]">
                             <div className="flex flex-col items-end gap-2">
@@ -128,7 +142,6 @@ export default function OrderSection({ status, orders }: Props) {
                                 </div>
                             </div>
                         </div>
-
                         {/* Action bar (được điều kiện hoá) */}
                         <div className="flex flex-wrap items-center justify-end gap-2 px-4 py-3">
                             <OrderDetailDialog orderId={o.id} />

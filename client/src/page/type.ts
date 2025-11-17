@@ -95,6 +95,7 @@ export interface ShippingData {
 interface OrderItemResponse {
     orderItemId: number;
     finalPrice: number;
+    isReviewed: boolean;
     listPriceSnapShot: number;
     nameProductSnapShot: string;
     quantity: number;

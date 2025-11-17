@@ -74,4 +74,5 @@ export const OrderAPI = {
             throw error;
         }
     },
+    // getOeder,
 };
