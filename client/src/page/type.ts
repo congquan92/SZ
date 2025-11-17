@@ -94,6 +94,7 @@ export interface ShippingData {
 // ---------------------------Order -----------------------
 interface OrderItemResponse {
     orderItemId: number;
+    productId: number;
     finalPrice: number;
     isReviewed: boolean;
     listPriceSnapShot: number;
@@ -140,6 +141,7 @@ export interface OrderItem {
     paymentType: "BANK_TRANSFER" | "CASH" | "QR_CODE";
     totalAmount: number;
     totalFeeShip: number;
+    isConfimed: boolean;
     discountValue: number;
 }
 

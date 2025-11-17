@@ -115,7 +115,7 @@ export default function OrderDetailDialog({ orderId }: { orderId: number }) {
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="text-right flex-shrink-0">
+                                            <div className="text-right shrink-0">
                                                 <div className="font-semibold">{formatVND(item.finalPrice * item.quantity)}</div>
                                             </div>
                                         </div>

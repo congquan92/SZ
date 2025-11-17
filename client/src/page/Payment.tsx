@@ -220,16 +220,15 @@ export default function Payment() {
                     state: { orderId: orderResponse.data },
                 });
                 return;
+            } else {
+                // sandbox payment
+                const paymentResponse = await PaymentAPI.getPaymentMethods(orderResponse.data);
+                // Xóa giỏ hàng cả khi đặt thành công hay không thành công
+                clearCart();
+                cartItems.map((item) => removeItem(item.id)); // Xóa từng item để đồng bộ với backend
+                // console.log("Payment redirect link:", paymentResponse.data);
+                window.location.href = paymentResponse.data;
             }
-
-            // sandbox
-            // Lấy link thanh toán
-            const paymentResponse = await PaymentAPI.getPaymentMethods(orderResponse.data);
-            // Xóa giỏ hàng cả khi đặt thành công hay không thành công
-            clearCart();
-            cartItems.map((item) => removeItem(item.id)); // Xóa từng item để đồng bộ với backend
-            // console.log("Payment redirect link:", paymentResponse.data);
-            window.location.href = paymentResponse.data;
         } catch (error) {
             console.error("Error placing order:", error);
             toast.error("Đặt hàng thất bại. Vui lòng thử lại.");

@@ -9,6 +9,7 @@ import { OrderAPI } from "@/api/order.api";
 import ReviewDialog from "@/components/ReviewDialog";
 import OrderDetailDialog from "@/components/OrderDetailDialog";
 import ReorderDialog from "@/components/ReorderDialog";
+import RepaymentDialog from "@/components/RepaymentDialog";
 import { toast } from "sonner";
 
 const STATUS_HEADER: Record<DeliveryStatus, string> = {
@@ -32,49 +33,59 @@ const statusTone: Record<DeliveryStatus, string> = {
     CANCELLED: "bg-rose-50 text-rose-700 border-rose-200",
     REFUNDED: "bg-rose-50 text-rose-700 border-rose-200",
 };
-const handelCancelOrder = async (orderId: number) => {
+const handelCancelOrder = async (orderId: number, onRefresh?: () => void) => {
     try {
         await OrderAPI.cancelOrder(orderId);
+        if (onRefresh) onRefresh();
         toast.success("Huỷ đơn hàng thành công.");
     } catch {
         toast.error("Huỷ đơn hàng thất bại.");
     }
 };
-// const handelCompleteOrder = async (orderId: number) => {
-//     try {
-//         await OrderAPI.completeOrder(orderId);
-//         toast.success("Xác nhận nhận hàng thành công.");
-//     } catch {
-//         toast.error("Xác nhận nhận hàng thất bại.");
-//     }
-// };
+
+const handelCompleteOrder = async (orderId: number, onRefresh?: () => void) => {
+    try {
+        await OrderAPI.completeOrder(orderId);
+        if (onRefresh) onRefresh();
+        toast.success("Xác nhận nhận hàng thành công.");
+    } catch {
+        toast.error("Xác nhận nhận hàng thất bại.");
+    }
+};
 
 const canReorderStatuses: DeliveryStatus[] = ["DELIVERED", "COMPLETED", "CANCELLED", "REFUNDED"];
-function renderActions(status: DeliveryStatus, orderId: number, order: OrderItem) {
+function renderActions(status: DeliveryStatus, orderId: number, order: OrderItem, onRefresh?: () => void) {
+    const actions = [];
+
     // PENDING: chỉ có Huỷ đơn
     if (status === "PENDING") {
-        return [
-            <Button key="cancel" variant="outline" size="sm" className="border-rose-300 text-rose-700 hover:bg-rose-50" onClick={() => handelCancelOrder(orderId)}>
+        actions.push(
+            <Button key="cancel" variant="outline" size="sm" className="border-rose-300 text-rose-700 hover:bg-rose-50" onClick={() => handelCancelOrder(orderId, onRefresh)}>
                 Huỷ đơn
-            </Button>,
-        ];
+            </Button>
+        );
     }
 
-    // if (status === "DELIVERED" || status === "COMPLETED") {
-    //     return [
-    //         <Button key="cancel" variant="outline" size="sm" className="border-rose-300 text-rose-700 hover:bg-rose-50" onClick={() => handelCompleteOrder(orderId)}>
-    //             Xác Nhận Đã Nhận Hàng
-    //         </Button>,
-    //     ];
-    // }
+    // Xác nhận đã nhận hàng
+    if (status === "DELIVERED" || (status === "COMPLETED" && !order.isConfimed)) {
+        actions.push(
+            <Button key="complete" variant="outline" size="sm" className="border-emerald-300 text-emerald-700 hover:bg-emerald-50" onClick={() => handelCompleteOrder(orderId, onRefresh)}>
+                Xác Nhận Đã Nhận Hàng
+            </Button>
+        );
+    }
 
-    // DELIVERED, COMPLETED, CANCELLED, REFUNDED: có Mua lại
+    // Mua lại
     if (canReorderStatuses.includes(status)) {
-        return [<ReorderDialog key="reorder" order={order} />];
+        actions.push(<ReorderDialog key="reorder" order={order} />);
     }
 
-    // CONFIRMED, PACKED, SHIPPED: chỉ Xem sản phẩm
-    return [];
+    // Thanh toán lại - chỉ hiện với đơn chưa thanh toán, không phải COD, và ở trạng thái Chờ xử lý
+    if (order.paymentStatus === "UNPAID" && order.paymentType !== "CASH" && status === "PENDING") {
+        actions.push(<RepaymentDialog key="repayment" order={order} />);
+    }
+
+    return actions;
 }
 
 type Props = { status: DeliveryStatus; orders: OrderItem[]; onRefresh?: () => void };
@@ -145,7 +156,7 @@ export default function OrderSection({ status, orders, onRefresh }: Props) {
                         {/* Action bar (được điều kiện hoá) */}
                         <div className="flex flex-wrap items-center justify-end gap-2 px-4 py-3">
                             <OrderDetailDialog orderId={o.id} />
-                            {renderActions(status, o.id, o)}
+                            {renderActions(status, o.id, o, onRefresh)}
                         </div>
                     </Card>
                 ))}
