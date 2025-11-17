@@ -10,6 +10,7 @@ import { formatVND } from "@/lib/helper";
 import { OrderAPI } from "@/api/order.api";
 import { VoucherAPI } from "@/api/voucher.api";
 import { AddressAPI } from "@/api/address.api";
+import { PaymentAPI } from "@/api/payment.api";
 import { toast } from "sonner";
 import { ShoppingCart, MapPin } from "lucide-react";
 import type { OrderItem, VoucherIF, Address } from "@/page/type";
@@ -24,6 +25,7 @@ export default function ReorderDialog({ order }: { order: OrderItem }) {
     const [addresses, setAddresses] = useState<Address[]>([]);
     const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
     const [isAddressDialogOpen, setIsAddressDialogOpen] = useState(false);
+    const [paymentMethod, setPaymentMethod] = useState<"CASH" | "BANK_TRANSFER" | "MOMO">("CASH");
     const navigate = useNavigate();
 
     // Load vouchers và addresses khi mở dialog
@@ -91,7 +93,7 @@ export default function ReorderDialog({ order }: { order: OrderItem }) {
             }));
 
             // Gọi API tạo đơn hàng mới với địa chỉ đã chọn
-            await OrderAPI.orderAdd(
+            const orderResponse = await OrderAPI.orderAdd(
                 selectedAddress.customerName,
                 selectedAddress.phoneNumber,
                 selectedAddress.ward,
@@ -102,19 +104,27 @@ export default function ReorderDialog({ order }: { order: OrderItem }) {
                 selectedAddress.province,
                 `${selectedAddress.streetAddress}, ${selectedAddress.ward}, ${selectedAddress.district}, ${selectedAddress.province}`,
                 orderItems,
-                order.paymentType,
+                paymentMethod,
                 order.note || "",
                 selectedVoucher ? Number(selectedVoucher) : null
             );
 
-            toast.success("Đặt lại đơn hàng thành công!");
-            setOpen(false);
-
-            // Chuyển đến trang đơn hàng để xem đơn mới
-            setTimeout(() => {
-                navigate("/order");
-                window.location.reload(); // Reload để cập nhật danh sách đơn hàng
-            }, 500);
+            // Xử lý theo phương thức thanh toán
+            if (paymentMethod === "CASH") {
+                // COD - chuyển về trang xác nhận đơn hàng
+                toast.success("Đặt lại đơn hàng thành công!");
+                setOpen(false);
+                navigate("/payment/cash-return", {
+                    replace: true,
+                    state: { orderId: orderResponse.data },
+                });
+            } else {
+                // Thanh toán online - lấy link thanh toán và redirect
+                const paymentResponse = await PaymentAPI.getPaymentMethods(orderResponse.data);
+                toast.success("Đang chuyển đến trang thanh toán...");
+                setOpen(false);
+                window.location.href = paymentResponse.data;
+            }
         } catch (error) {
             console.error("Reorder failed:", error);
             toast.error("Đặt lại đơn hàng thất bại. Vui lòng thử lại sau.");
@@ -287,6 +297,25 @@ export default function ReorderDialog({ order }: { order: OrderItem }) {
                         )}
                     </div>
 
+                    {/* Phương thức thanh toán */}
+                    <div className="space-y-2">
+                        <h3 className="font-semibold text-sm">Phương thức thanh toán</h3>
+                        <RadioGroup value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as "CASH" | "BANK_TRANSFER" | "MOMO")} className="grid gap-2">
+                            <Label className="flex items-center gap-2 rounded-md border p-3 cursor-pointer hover:bg-accent transition-colors">
+                                <RadioGroupItem value="CASH" id="reorder-pay-cash" />
+                                <span className="text-sm">Thanh toán khi nhận hàng (COD)</span>
+                            </Label>
+                            <Label className="flex items-center gap-2 rounded-md border p-3 cursor-pointer hover:bg-accent transition-colors">
+                                <RadioGroupItem value="BANK_TRANSFER" id="reorder-pay-bank" />
+                                <span className="text-sm">VNPay (QR/Thẻ)</span>
+                            </Label>
+                            <Label className="flex items-center gap-2 rounded-md border p-3 cursor-pointer hover:bg-accent transition-colors">
+                                <RadioGroupItem value="MOMO" id="reorder-pay-momo" />
+                                <span className="text-sm">MoMo</span>
+                            </Label>
+                        </RadioGroup>
+                    </div>
+
                     {/* Tổng tiền */}
                     <div className="space-y-2">
                         <h3 className="font-semibold text-sm">Tổng thanh toán</h3>
@@ -325,7 +354,7 @@ export default function ReorderDialog({ order }: { order: OrderItem }) {
                         Hủy
                     </Button>
                     <Button onClick={handleReorder} disabled={loading}>
-                        {loading ? "Đang xử lý..." : "Xác nhận đặt hàng"}
+                        {loading ? "Đang xử lý..." : paymentMethod === "CASH" ? "Đặt hàng" : "Thanh toán"}
                     </Button>
                 </DialogFooter>
             </DialogContent>
