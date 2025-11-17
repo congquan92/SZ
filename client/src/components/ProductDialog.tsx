@@ -164,7 +164,7 @@ export default function ProductDialog({ open, onClose, product }: Props) {
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
             {/* TỐI ƯU: Responsive width, max-height và cho phép toàn bộ dialog cuộn */}
-            <DialogContent className="p-0 max-h-[90vh] lg:max-w-[940px] md:max-w-[670px] sm:max-w-[520px] overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-0">
+            <DialogContent className="p-0 sm:max-w-fit max-w-[95vw] max-h-[95vh] overflow-y-auto overflow-x-hidden grid grid-cols-1 md:grid-cols-2 gap-0">
                 {/* LEFT: CAROUSEL GALLERY */}
                 <div className="relative bg-muted/40 p-3">
                     {discountPercent > 0 && <Badge className="absolute left-3 top-3 z-10 bg-red-600 text-white rounded-none shadow-sm">{discountPercent}%</Badge>}

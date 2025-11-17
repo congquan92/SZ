@@ -8,6 +8,7 @@ import { OrderAPI } from "@/api/order.api";
 
 import ReviewDialog from "@/components/ReviewDialog";
 import OrderDetailDialog from "@/components/OrderDetailDialog";
+import ReorderDialog from "@/components/ReorderDialog";
 import { toast } from "sonner";
 
 const STATUS_HEADER: Record<DeliveryStatus, string> = {
@@ -39,24 +40,9 @@ const handelCancelOrder = async (orderId: number) => {
         toast.error("Huỷ đơn hàng thất bại.");
     }
 };
-const handelCompletedOrder = async (orderId: number) => {
-    try {
-        await OrderAPI.completeOrder(orderId);
-        toast.success("Xác nhận hoàn tất đơn hàng thành công.");
-    } catch {
-        toast.error("Xác nhận hoàn tất đơn hàng thất bại.");
-    }
-};
 
 const canReorderStatuses: DeliveryStatus[] = ["DELIVERED", "COMPLETED", "CANCELLED", "REFUNDED"];
-function renderActions(status: DeliveryStatus, orderId: number) {
-    // luôn có xem xem sản phẩm
-    // const ViewBtn = (
-    //     <Button key="view" variant="secondary" size="sm" onClick={() => console.log("xem sản phẩm:", o)}>
-    //         Xem sản phẩm <ChevronRight className="ml-1 h-4 w-4" />
-    //     </Button>
-    // );
-
+function renderActions(status: DeliveryStatus, orderId: number, order: OrderItem) {
     // PENDING: chỉ có Huỷ đơn
     if (status === "PENDING") {
         return [
@@ -66,21 +52,9 @@ function renderActions(status: DeliveryStatus, orderId: number) {
         ];
     }
 
-    // if (status === "COMPLETED" && o.paymentStatus === "PAID") {
-    //     return [
-    //         <Button key="completed" variant="outline" size="sm" className="border-primary text-primary hover:bg-primary/10" onClick={() => handelCompletedOrder(orderId)}>
-    //             Xác nhận hoàn tất
-    //         </Button>,
-    //     ];
-    // }
-
-    // DELIVERED, CANCELLED, REFUNDED: có Mua lại
+    // DELIVERED, COMPLETED, CANCELLED, REFUNDED: có Mua lại
     if (canReorderStatuses.includes(status)) {
-        return [
-            <Button key="reorder" variant="outline" size="sm" onClick={() => console.log("mua lại:", orderId)}>
-                Mua lại
-            </Button>,
-        ];
+        return [<ReorderDialog key="reorder" order={order} />];
     }
 
     // CONFIRMED, PACKED, SHIPPED: chỉ Xem sản phẩm
@@ -158,7 +132,7 @@ export default function OrderSection({ status, orders }: Props) {
                         {/* Action bar (được điều kiện hoá) */}
                         <div className="flex flex-wrap items-center justify-end gap-2 px-4 py-3">
                             <OrderDetailDialog orderId={o.id} />
-                            {renderActions(status, o.id)}
+                            {renderActions(status, o.id, o)}
                         </div>
                     </Card>
                 ))}
