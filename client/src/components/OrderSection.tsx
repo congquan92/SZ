@@ -4,12 +4,11 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { formatVND } from "@/lib/helper";
 import type { DeliveryStatus, OrderItem } from "@/page/type";
-import { ChevronRight } from "lucide-react";
 import { OrderAPI } from "@/api/order.api";
 
 import ReviewDialog from "@/components/ReviewDialog";
+import OrderDetailDialog from "@/components/OrderDetailDialog";
 import { toast } from "sonner";
-import { Link } from "react-router-dom";
 
 const STATUS_HEADER: Record<DeliveryStatus, string> = {
     PENDING: "Chờ xử lý",
@@ -50,7 +49,7 @@ const handelCompletedOrder = async (orderId: number) => {
 };
 
 const canReorderStatuses: DeliveryStatus[] = ["DELIVERED", "COMPLETED", "CANCELLED", "REFUNDED"];
-function renderActions(status: DeliveryStatus, orderId: number, o: OrderItem) {
+function renderActions(status: DeliveryStatus, orderId: number) {
     // luôn có xem xem sản phẩm
     // const ViewBtn = (
     //     <Button key="view" variant="secondary" size="sm" onClick={() => console.log("xem sản phẩm:", o)}>
@@ -142,58 +141,25 @@ export default function OrderSection({ status, orders }: Props) {
                                             <ReviewDialog orderItemId={it.orderItemId} productName={it.nameProductSnapShot || it.productVariantResponse.sku} productImage={it.urlImageSnapShot} />
                                         </div>
                                     )}
-                                    <div className="mt-3 flex justify-end">
-                                        <Link to={`/product`}>
-                                            <Button variant="link" size="sm">
-                                                Xem sản phẩm <ChevronRight className="ml-1" />
-                                            </Button>
-                                        </Link>
-                                    </div>
                                 </div>
                             ))}
                         </div>
 
                         {/* Footer totals (Shopee style: dồn phải, dòng làm rõ tổng) */}
-                        <div className="flex flex-col md:flex-row border-t">
-                            <div className="px-4 py-3 bg-muted/20 flex-1">
-                                <div className="text-xs text-muted-foreground mb-1">Địa chỉ nhận hàng</div>
-                                <div className="space-y-1">
-                                    <div className="text-sm font-medium">
-                                        {o.customerName} • {o.customerPhone}
-                                    </div>
-                                    <div className="text-sm text-muted-foreground">
-                                        {o.deliveryAddress}, {o.deliveryProvinceName}
-                                    </div>
-                                    {o.note && (
-                                        <div className="text-sm text-muted-foreground">
-                                            <span className="font-medium">Ghi chú:</span> {o.note}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="px-4 py-3 bg-muted/30 md:min-w-[300px]">
-                                <div className="flex flex-col items-end gap-1">
-                                    <div className="text-sm text-muted-foreground">
-                                        Tổng tiền hàng: <span className="font-medium text-foreground">{formatVND(o.originalOrderAmount)}</span>
-                                    </div>
-                                    <div className="text-sm text-muted-foreground">
-                                        Phí vận chuyển: <span className="font-medium text-foreground">{formatVND(o.totalFeeShip)}</span>
-                                    </div>
-                                    <div className="text-sm text-muted-foreground">
-                                        Giảm giá voucher: - <span className="font-medium text-foreground">{formatVND(o.discountValue)}</span>
-                                    </div>
-                                    <Separator className="my-1" />
-
-                                    <div className="text-base">
-                                        Thành tiền: <span className="font-bold text-foreground"> {formatVND(o.totalAmount)}</span>
-                                    </div>
+                        <div className="px-4 py-3 bg-muted/30 md:min-w-[300px]">
+                            <div className="flex flex-col items-end gap-2">
+                                <Separator />
+                                <div className="text-base">
+                                    Thành tiền: <span className="font-bold text-foreground"> {formatVND(o.totalAmount)}</span>
                                 </div>
                             </div>
                         </div>
 
                         {/* Action bar (được điều kiện hoá) */}
-                        <div className="flex flex-wrap items-center justify-end gap-2 px-4 py-3">{renderActions(status, o.id, o)}</div>
+                        <div className="flex flex-wrap items-center justify-end gap-2 px-4 py-3">
+                            <OrderDetailDialog orderId={o.id} />
+                            {renderActions(status, o.id)}
+                        </div>
                     </Card>
                 ))}
             </div>

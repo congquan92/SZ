@@ -141,3 +141,46 @@ export interface OrderItem {
     totalFeeShip: number;
     discountValue: number;
 }
+
+export interface OrderDetailData {
+    id: number;
+    customerName: string;
+    customerPhone: string;
+    deliveryAddress: string;
+    deliveryDistrictName: string;
+    deliveryProvinceName: string;
+    totalAmount: number;
+    note: string;
+    totalFeeShip: number;
+    discountValue: number;
+    originalOrderAmount: number;
+    deliveryStatus: string;
+    paymentStatus: string;
+    paymentType: string;
+    orderTrackingCode: string | null;
+    orderItemResponses: Array<{
+        orderItemId: number;
+        productVariantResponse: {
+            id: number;
+            weight: number;
+            length: number;
+            width: number;
+            height: number;
+            price: number;
+            quantity: number;
+            sku: string;
+            variantAttributes: Array<{
+                id: number;
+                attribute: string;
+                value: string;
+            }>;
+        };
+        quantity: number;
+        listPriceSnapShot: number;
+        finalPrice: number;
+        urlImageSnapShot: string;
+        nameProductSnapShot: string;
+        variantSnapShot: string;
+        returnQuantity: number;
+    }>;
+}

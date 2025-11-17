@@ -65,4 +65,13 @@ export const OrderAPI = {
             throw error;
         }
     },
+    getOrderDetail: async (orderId: number) => {
+        try {
+            const response = await axiosInstance.get(`/orders/${orderId}`);
+            return response.data;
+        } catch (error) {
+            console.error("Get order detail failed", error);
+            throw error;
+        }
+    },
 };
