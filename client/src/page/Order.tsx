@@ -54,7 +54,8 @@ export default function OrderPage() {
         if (active !== "ALL") list = list.filter((o) => o.deliveryStatus === active);
         if (q.trim()) {
             const kw = q.trim().toLowerCase();
-            list = list.filter((o) => o.id.toString().toLowerCase().includes(kw) || o.orderItemResponses.some((it) => it.productVariantResponse.sku.toLowerCase().includes(kw)));
+            //Mã đơn hàng, SKU, Tên sản phẩm
+            list = list.filter((o) => o.id.toString().toLowerCase().includes(kw) || o.orderItemResponses.some((it) => it.productVariantResponse.sku.toLowerCase().includes(kw) || it.nameProductSnapShot.toLowerCase().includes(kw)));
         }
         return list;
     }, [active, q, orders]);
@@ -103,7 +104,7 @@ export default function OrderPage() {
                 {/* Search */}
                 <div className="mt-4 relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Tìm đơn theo Mã đơn hàng, Nhà bán hoặc Tên sản phẩm" className="pl-9" value={q} onChange={(e) => setQ(e.target.value)} />
+                    <Input placeholder="Tìm đơn theo Mã đơn hàng, SKU hoặc Tên sản phẩm" className="pl-9" value={q} onChange={(e) => setQ(e.target.value)} />
                 </div>
 
                 {/* Content */}
