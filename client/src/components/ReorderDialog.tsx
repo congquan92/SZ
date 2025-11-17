@@ -4,13 +4,16 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Separator } from "@/components/ui/separator";
 import { Card } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { formatVND } from "@/lib/helper";
 import { OrderAPI } from "@/api/order.api";
 import { VoucherAPI } from "@/api/voucher.api";
+import { AddressAPI } from "@/api/address.api";
 import { toast } from "sonner";
-import { ShoppingCart } from "lucide-react";
-import type { OrderItem, VoucherIF } from "@/page/type";
-import { useNavigate } from "react-router-dom";
+import { ShoppingCart, MapPin } from "lucide-react";
+import type { OrderItem, VoucherIF, Address } from "@/page/type";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function ReorderDialog({ order }: { order: OrderItem }) {
     const [open, setOpen] = useState(false);
@@ -18,21 +21,33 @@ export default function ReorderDialog({ order }: { order: OrderItem }) {
     const [vouchers, setVouchers] = useState<VoucherIF[]>([]);
     const [selectedVoucher, setSelectedVoucher] = useState<string | null>(null);
     const [voucherDiscount, setVoucherDiscount] = useState<number>(0);
+    const [addresses, setAddresses] = useState<Address[]>([]);
+    const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
+    const [isAddressDialogOpen, setIsAddressDialogOpen] = useState(false);
     const navigate = useNavigate();
 
-    // Load vouchers khi mở dialog
+    // Load vouchers và addresses khi mở dialog
     useEffect(() => {
-        const fetchVouchers = async () => {
+        const fetchData = async () => {
             if (open) {
                 try {
-                    const response = await VoucherAPI.getVouchers();
-                    setVouchers(response.data.data);
+                    const [voucherResponse, addressResponse] = await Promise.all([VoucherAPI.getVouchers(), AddressAPI.getAddress()]);
+                    setVouchers(voucherResponse.data.data);
+
+                    const loadedAddresses = addressResponse.data.data;
+                    setAddresses(loadedAddresses);
+
+                    // Set địa chỉ từ order ban đầu hoặc địa chỉ mặc định
+                    const defaultAddr = loadedAddresses.find((a: Address) => a.defaultAddress);
+                    if (defaultAddr) {
+                        setSelectedAddressId(defaultAddr.id);
+                    }
                 } catch (error) {
-                    console.error("Failed to fetch vouchers:", error);
+                    console.error("Failed to fetch data:", error);
                 }
             }
         };
-        fetchVouchers();
+        fetchData();
     }, [open]);
 
     // Tính giá trị voucher
@@ -60,6 +75,13 @@ export default function ReorderDialog({ order }: { order: OrderItem }) {
     const finalTotal = Math.max(0, order.originalOrderAmount + order.totalFeeShip - voucherDiscount);
 
     const handleReorder = async () => {
+        // Validate địa chỉ
+        const selectedAddress = addresses.find((a) => a.id === selectedAddressId);
+        if (!selectedAddress) {
+            toast.error("Vui lòng chọn địa chỉ giao hàng");
+            return;
+        }
+
         setLoading(true);
         try {
             // Chuẩn bị dữ liệu orderItems từ đơn hàng cũ
@@ -68,17 +90,17 @@ export default function ReorderDialog({ order }: { order: OrderItem }) {
                 productVariantId: item.productVariantResponse.id,
             }));
 
-            // Gọi API tạo đơn hàng mới với thông tin từ đơn cũ
+            // Gọi API tạo đơn hàng mới với địa chỉ đã chọn
             await OrderAPI.orderAdd(
-                order.customerName,
-                order.customerPhone,
-                order.deliveryWardName,
-                order.deliveryWardCode,
-                order.deliveryDistrictId,
-                order.deliveryProvinceId,
-                order.deliveryDistrictName,
-                order.deliveryProvinceName,
-                order.deliveryAddress,
+                selectedAddress.customerName,
+                selectedAddress.phoneNumber,
+                selectedAddress.ward,
+                selectedAddress.wardId,
+                selectedAddress.districtId,
+                selectedAddress.provinceId,
+                selectedAddress.district,
+                selectedAddress.province,
+                `${selectedAddress.streetAddress}, ${selectedAddress.ward}, ${selectedAddress.district}, ${selectedAddress.province}`,
                 orderItems,
                 order.paymentType,
                 order.note || "",
@@ -120,15 +142,95 @@ export default function ReorderDialog({ order }: { order: OrderItem }) {
                 <div className="space-y-4">
                     {/* Thông tin giao hàng */}
                     <div className="space-y-2">
-                        <h3 className="font-semibold text-sm">Thông tin giao hàng</h3>
-                        <div className="p-3 bg-muted/30 rounded-lg space-y-1 text-sm">
-                            <div>
-                                <span className="font-medium">{order.customerName}</span> • {order.customerPhone}
-                            </div>
-                            <div className="text-muted-foreground">
-                                {order.deliveryAddress}, {order.deliveryProvinceName}
-                            </div>
+                        <div className="flex items-center justify-between">
+                            <h3 className="font-semibold text-sm">Thông tin giao hàng</h3>
+                            <Dialog open={isAddressDialogOpen} onOpenChange={setIsAddressDialogOpen}>
+                                <DialogTrigger asChild>
+                                    <Button variant="link" size="sm" className="h-auto p-0">
+                                        Thay đổi
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                                    <DialogHeader>
+                                        <DialogTitle>Chọn địa chỉ giao hàng</DialogTitle>
+                                    </DialogHeader>
+                                    <div className="space-y-3 py-4">
+                                        {addresses.length === 0 ? (
+                                            <div className="flex flex-col items-center justify-center py-8 text-center">
+                                                <MapPin className="h-12 w-12 text-muted-foreground mb-3" />
+                                                <p className="text-sm text-muted-foreground mb-3">Chưa có địa chỉ nào</p>
+                                                <Link to="/profile?tab=address">
+                                                    <Button variant="outline" size="sm">
+                                                        Thêm địa chỉ mới
+                                                    </Button>
+                                                </Link>
+                                            </div>
+                                        ) : (
+                                            <RadioGroup value={selectedAddressId?.toString()} onValueChange={(v) => setSelectedAddressId(Number(v))}>
+                                                {addresses.map((addr) => (
+                                                    <Label key={addr.id} className="flex items-start gap-3 rounded-lg border p-4 cursor-pointer hover:bg-accent transition-colors" htmlFor={`addr-${addr.id}`}>
+                                                        <RadioGroupItem value={addr.id.toString()} id={`addr-${addr.id}`} className="mt-1" />
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center gap-2 mb-1">
+                                                                <p className="font-medium">{addr.customerName}</p>
+                                                                {addr.defaultAddress && (
+                                                                    <Badge variant="default" className="text-xs">
+                                                                        Mặc định
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
+                                                            <p className="text-sm text-muted-foreground mb-2">{addr.phoneNumber}</p>
+                                                            <p className="text-sm">{addr.streetAddress}</p>
+                                                            <p className="text-sm text-muted-foreground">
+                                                                {addr.ward}, {addr.district}, {addr.province}
+                                                            </p>
+                                                        </div>
+                                                    </Label>
+                                                ))}
+                                            </RadioGroup>
+                                        )}
+                                    </div>
+                                    <div className="flex justify-between gap-2">
+                                        <Link to="/profile?tab=address">
+                                            <Button variant="outline" size="sm">
+                                                Quản lý địa chỉ
+                                            </Button>
+                                        </Link>
+                                        <Button onClick={() => setIsAddressDialogOpen(false)}>Xác nhận</Button>
+                                    </div>
+                                </DialogContent>
+                            </Dialog>
                         </div>
+                        {selectedAddressId ? (
+                            (() => {
+                                const selectedAddress = addresses.find((a) => a.id === selectedAddressId);
+                                return selectedAddress ? (
+                                    <div className="p-3 bg-muted/30 rounded-lg space-y-1 text-sm">
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-medium">{selectedAddress.customerName}</span>
+                                            <span>•</span>
+                                            <span>{selectedAddress.phoneNumber}</span>
+                                            {selectedAddress.defaultAddress && (
+                                                <Badge variant="default" className="text-xs">
+                                                    Mặc định
+                                                </Badge>
+                                            )}
+                                        </div>
+                                        <div className="text-muted-foreground">
+                                            {selectedAddress.streetAddress}, {selectedAddress.ward}, {selectedAddress.district}, {selectedAddress.province}
+                                        </div>
+                                    </div>
+                                ) : null;
+                            })()
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-6 text-center border rounded-lg">
+                                <MapPin className="h-10 w-10 text-muted-foreground mb-2" />
+                                <p className="text-sm text-muted-foreground mb-3">Chưa chọn địa chỉ giao hàng</p>
+                                <Button variant="outline" size="sm" onClick={() => setIsAddressDialogOpen(true)}>
+                                    Chọn địa chỉ
+                                </Button>
+                            </div>
+                        )}
                     </div>
 
                     {/* Sản phẩm */}
@@ -138,7 +240,7 @@ export default function ReorderDialog({ order }: { order: OrderItem }) {
                             {order.orderItemResponses.map((item) => (
                                 <div key={item.orderItemId} className="p-3">
                                     <div className="flex gap-3">
-                                        <img src={item.urlImageSnapShot} alt={item.nameProductSnapShot} className="size-16 object-cover rounded-md border bg-white flex-shrink-0" />
+                                        <img src={item.urlImageSnapShot} alt={item.nameProductSnapShot} className="size-16 object-cover rounded-md border bg-white shrink-0" />
                                         <div className="flex-1 min-w-0">
                                             <div className="text-sm font-medium line-clamp-2">{item.nameProductSnapShot}</div>
                                             <div className="text-xs text-muted-foreground mt-1">{item.productVariantResponse.variantAttributes.map((attr) => `${attr.attribute}: ${attr.value}`).join(", ")}</div>
