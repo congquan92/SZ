@@ -14,12 +14,14 @@ import { CartAPI } from "@/api/cart.api";
 import { useCartStore } from "@/stores/useCartStore";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Title from "@/components/Title";
+import ProductDescription from "@/components/ProductDescription";
+import ProductReviews from "@/components/ProductReviews";
 import { ReviewAPI } from "@/api/review.api";
 import type { Review } from "@/components/types";
 import { useAuthStore } from "@/stores/useAuthStores";
 import SizeZoom from "@/components/SizeZoom";
+import EditReviewDialog from "@/components/EditReviewDialog";
 
 export default function ProductDetail() {
     const { id, slug } = useParams();
@@ -45,6 +47,10 @@ export default function ProductDetail() {
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxMedia, setLightboxMedia] = useState<{ url: string; isVideo: boolean } | null>(null);
     const [zoomLevel, setZoomLevel] = useState(1);
+
+    // Edit review dialog
+    const [editReviewOpen, setEditReviewOpen] = useState(false);
+    const [selectedReview, setSelectedReview] = useState<Review | null>(null);
 
     const initProductDetail = useCallback(async () => {
         try {
@@ -267,7 +273,18 @@ export default function ProductDetail() {
     };
 
     const handelEditReview = (review: Review) => {
-        console.log("Edit review", review);
+        setSelectedReview(review);
+        setEditReviewOpen(true);
+    };
+
+    // Handle sau khi update review thành công
+    const handleReviewUpdateSuccess = () => {
+        // Reload lại reviews
+        initReviews();
+        initReviewsMe();
+        initCalculateRating();
+        // Reload lại thông tin sản phẩm để cập nhật avgRating
+        initProductDetail();
     };
 
     //    Size zoom
@@ -464,165 +481,31 @@ export default function ProductDetail() {
 
                     {/* Mô tả sản phẩm */}
                     <TabsContent value="description" className="mt-6 space-y-4">
-                        <div className="prose max-w-none">
-                            <h3 className="text-lg font-semibold mb-3">Thông tin chi tiết</h3>
-                            <p className="text-muted-foreground leading-relaxed">{product.description || "Chưa có mô tả chi tiết cho sản phẩm này."}</p>
-
-                            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <h4 className="font-medium">Thông số kỹ thuật</h4>
-                                    <div className="text-sm space-y-1 text-muted-foreground">
-                                        <p>• Chất liệu: Cotton cao cấp</p>
-                                        <p>• Xuất xứ: Việt Nam</p>
-                                        <p>• Phù hợp: Nam/Nữ</p>
-                                        <p>• Bảo quản: Giặt máy, không tẩy</p>
-                                    </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <h4 className="font-medium">Chính sách</h4>
-                                    <div className="text-sm space-y-1 text-muted-foreground">
-                                        <p>• Đổi trả trong 7 ngày</p>
-                                        <p>• Miễn phí vận chuyển đơn &gt; 500k</p>
-                                        <p>• Thanh toán khi nhận hàng</p>
-                                        <p>• Bảo hành chính hãng</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <ProductDescription description={product.description} />
                     </TabsContent>
 
                     {/* Đánh giá & Bình luận */}
                     <TabsContent value="reviews" className="mt-6 space-y-8">
-                        {/* Tổng quan đánh giá */}
-                        <div className="bg-muted/30 rounded-lg p-6">
-                            <div className="flex flex-col md:flex-row gap-6 items-center">
-                                <div className="text-center">
-                                    <div className="text-5xl font-bold">{(product.avgRating ?? 0).toFixed(1)}</div>
-                                    <div className="flex justify-center mt-2">{renderStars(product.avgRating ?? 0)}</div>
-                                    <div className="text-sm text-muted-foreground mt-1">{allReviews?.length || 0} đánh giá</div>
-                                </div>
-                                <Separator orientation="vertical" className="h-24 hidden md:block" />
-                                <div className="flex-1 w-full space-y-2">
-                                    {[5, 4, 3, 2, 1].map((star) => {
-                                        const count = allReviews?.filter((r) => r.rating === star).length || 0;
-                                        const percentage = allReviews && allReviews.length > 0 ? (count / allReviews.length) * 100 : 0;
-                                        return (
-                                            <div key={star} className="flex items-center gap-3">
-                                                <span className="text-sm w-12">{star} sao</span>
-                                                <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                                                    <div className="h-full bg-yellow-500" style={{ width: `${percentage}%` }} />
-                                                </div>
-                                                <span className="text-sm text-muted-foreground w-12 text-right">{count}</span>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Danh sách đánh giá & bình luận */}
-                        <div>
-                            <h4 className="font-medium mb-4">Đánh giá từ khách hàng ({allReviews?.length || 0})</h4>
-                            {allReviews && allReviews.length > 0 ? (
-                                <div className="space-y-4">
-                                    {allReviews.map((review) => {
-                                        try {
-                                            const reviewDate = review.createdDate
-                                                ? new Date(review.createdDate).toLocaleDateString("vi-VN", {
-                                                      year: "numeric",
-                                                      month: "long",
-                                                      day: "numeric",
-                                                  })
-                                                : "Không rõ ngày";
-
-                                            const userName = review.userResponse?.fullName || review.fullName || "Người dùng";
-                                            const userAvatar = review.userResponse?.avatar || review.avatarUser || `https://api.dicebear.com/7.x/avataaars/svg?seed=${review.userResponse?.id || review.id}`;
-
-                                            // Kiểm tra xem review này có phải của user đang đăng nhập không
-                                            const isMyReview = user && myReviews.some((mr) => mr.id === review.id);
-                                            return (
-                                                <div key={review.id} className={`border rounded-lg p-4 ${isMyReview ? "bg-blue-50/50 border-blue-200" : ""}`}>
-                                                    <div className="flex items-start gap-3">
-                                                        <Avatar>
-                                                            <AvatarImage src={userAvatar} />
-                                                            <AvatarFallback>{userName?.charAt(0)?.toUpperCase() || "U"}</AvatarFallback>
-                                                        </Avatar>
-                                                        <div className="flex-1">
-                                                            <div className="flex items-center justify-between">
-                                                                <div>
-                                                                    <div className="flex items-center gap-2">
-                                                                        <div className="font-medium">{userName}</div>
-                                                                        {isMyReview && (
-                                                                            <Badge variant="default" className="text-xs bg-blue-600">
-                                                                                Đánh giá của bạn
-                                                                            </Badge>
-                                                                        )}
-                                                                    </div>
-                                                                    <div className="flex items-center gap-2 mt-1">
-                                                                        {renderStars(review.rating || 0)}
-                                                                        <span className="text-xs text-muted-foreground">{reviewDate}</span>
-                                                                    </div>
-                                                                </div>
-                                                                {review.status && (
-                                                                    <Badge variant={review.status === "APPROVED" ? "default" : "secondary"} className="text-xs">
-                                                                        {review.status}
-                                                                    </Badge>
-                                                                )}
-                                                            </div>
-                                                            <p className="text-sm text-muted-foreground mt-2">{review.comment || "Không có bình luận"}</p>
-                                                            {/* Hình ảnh/Video review */}
-                                                            {review.images && Array.isArray(review.images) && review.images.length > 0 && (
-                                                                <div className="flex gap-2 mt-3 flex-wrap">
-                                                                    {review.images.map((img) => {
-                                                                        const isVideo = img.url.includes(".mp4") || img.url.includes(".mov") || img.url.includes(".avi") || img.url.includes(".webm");
-                                                                        return (
-                                                                            <div key={img.id} className="relative cursor-pointer hover:opacity-80 transition-opacity" onClick={() => handleMediaClick(img.url, isVideo)}>
-                                                                                {isVideo ? (
-                                                                                    <video src={img.url} className="w-32 h-32 object-cover rounded-md border" />
-                                                                                ) : (
-                                                                                    <img src={img.url} alt="Review" className="w-32 h-32 object-cover rounded-md border" loading="lazy" />
-                                                                                )}
-                                                                            </div>
-                                                                        );
-                                                                    })}
-                                                                </div>
-                                                            )}
-
-                                                            {isMyReview && (
-                                                                <Button variant="ghost" size="sm" className="h-8 px-2 text-xs text-blue-600 hover:text-blue-700" onClick={() => handelEditReview(review)}>
-                                                                    Chỉnh sửa
-                                                                </Button>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            );
-                                        } catch (err) {
-                                            console.error("Error rendering review:", err, review);
-                                            return null;
-                                        }
-                                    })}
-                                </div>
-                            ) : (
-                                <div className="text-center py-8 text-muted-foreground">
-                                    <p>Chưa có đánh giá nào cho sản phẩm này.</p>
-                                    <p className="text-sm mt-2">Hãy là người đầu tiên đánh giá sản phẩm!</p>
-                                </div>
-                            )}
-                        </div>
-
-                        {allReviews && allReviews.length > 0 && currentPage < totalPages && (
-                            <div className="text-center">
-                                <Button variant="outline" onClick={loadMoreReviews} disabled={isLoadingMore}>
-                                    {isLoadingMore ? "Đang tải..." : "Xem thêm đánh giá"}
-                                </Button>
-                            </div>
-                        )}
+                        <ProductReviews
+                            avgRating={product.avgRating ?? 0}
+                            allReviews={allReviews}
+                            myReviews={myReviews}
+                            user={user}
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            isLoadingMore={isLoadingMore}
+                            onLoadMore={loadMoreReviews}
+                            onEditReview={handelEditReview}
+                            onMediaClick={handleMediaClick}
+                        />
                     </TabsContent>
                 </Tabs>
             </div>
             {/* Lightbox xem ảnh/video */}
             <SizeZoom isOpen={lightboxOpen} onClose={() => setLightboxOpen(false)} media={lightboxMedia} zoomLevel={zoomLevel} onZoomIn={handleZoomIn} onZoomOut={handleZoomOut} onResetZoom={handleResetZoom} />
+
+            {/* Edit Review Dialog */}
+            <EditReviewDialog isOpen={editReviewOpen} onClose={() => setEditReviewOpen(false)} review={selectedReview} onSuccess={handleReviewUpdateSuccess} />
 
             <Separator className="mt-10" />
             {/* Gợi ý sản phẩm */}
