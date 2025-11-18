@@ -135,8 +135,8 @@ export default function OrderSection({ status, orders, onRefresh }: Props) {
                                         <div className="text-sm font-semibold w-28 text-right">{formatVND(it.finalPrice * it.quantity)}</div>
                                     </div>
 
-                                    {/* Button đánh giá - chỉ hiện với đơn COMPLETED và sản phẩm chưa được đánh giá */}
-                                    {status === "COMPLETED" && !it.isReviewed && (
+                                    {/* Button đánh giá - chỉ hiện với đơn COMPLETED và sản phẩm chưa được đánh giá và phải xác nhận đơn hàng */}
+                                    {status === "COMPLETED" && !it.isReviewed && o.isConfimed && (
                                         <div className="mt-3 flex justify-end">
                                             <ReviewDialog orderItemId={it.orderItemId} productName={it.nameProductSnapShot || it.productVariantResponse.sku} productImage={it.urlImageSnapShot} onSuccess={onRefresh} />
                                         </div>

@@ -8,6 +8,7 @@ import type { Review } from "./types";
 import { ReviewAPI } from "@/api/review.api";
 import { UploadImgAPI } from "@/api/uploadImg.api";
 import { toast } from "sonner";
+import { useAuthStore } from "@/stores/useAuthStores";
 
 interface EditReviewDialogProps {
     isOpen: boolean;
@@ -25,6 +26,7 @@ export default function EditReviewDialog({ isOpen, onClose, review, onSuccess }:
     const [imagesToDelete, setImagesToDelete] = useState<number[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
+    const { fetchUser } = useAuthStore();
 
     // Load dữ liệu review khi mở dialog
     useEffect(() => {
@@ -114,7 +116,7 @@ export default function EditReviewDialog({ isOpen, onClose, review, onSuccess }:
 
             // 2. Xóa ảnh cũ nếu có
             if (imagesToDelete.length > 0) {
-                await ReviewAPI.deleteImgReview(imagesToDelete);
+                await ReviewAPI.deleteImgReview(imagesToDelete, reviewId);
             }
 
             // 3. Upload và thêm ảnh mới nếu có
@@ -122,13 +124,16 @@ export default function EditReviewDialog({ isOpen, onClose, review, onSuccess }:
                 setIsUploading(true);
                 const uploadPromises = newImages.map((file) => UploadImgAPI.uploadImg(file));
                 const uploadResults = await Promise.all(uploadPromises);
-                const newImageUrls = uploadResults.map((result: { data: string }) => result.data);
+                // Flatten mảng nếu API trả về mảng string, hoặc lấy data nếu là object
+                const newImageUrls = uploadResults.flatMap((result: { data: string | string[] }) => (Array.isArray(result.data) ? result.data : [result.data]));
 
                 await ReviewAPI.addImgReview(reviewId, newImageUrls);
                 setIsUploading(false);
             }
 
             toast.success("Cập nhật đánh giá thành công");
+            //cập nhật rank và point
+            fetchUser();
             onSuccess();
             onClose();
         } catch (error) {

@@ -61,9 +61,9 @@ export const ReviewAPI = {
         }
     },
     // xoa anh review
-    deleteImgReview: async (imageDelete: number[]) => {
+    deleteImgReview: async (imageDelete: number[], reviewId: number) => {
         try {
-            const response = await axiosInstance.put(`/review/delete-image`, imageDelete);
+            const response = await axiosInstance.put(`/review/${reviewId}/delete-image`, imageDelete);
             return response.data;
         } catch (error) {
             console.error("Failed to delete review image:", error);

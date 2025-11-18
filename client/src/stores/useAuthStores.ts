@@ -12,6 +12,7 @@ interface User {
     phone: string;
     avatar: string | null;
     totalSpent: number;
+    point: number;
     userRankResponse: {
         id: number;
         name: string;
@@ -25,6 +26,7 @@ interface User {
             permissions: string[];
         }
     ];
+    verifiedEmail: boolean;
 }
 interface AuthState {
     user: User | null;

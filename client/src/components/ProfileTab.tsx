@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuthStore } from "@/stores/useAuthStores";
-import { Calendar, CircleUser, Edit2, ImageIcon, Loader2, Mail, Phone, User, VenusAndMars, X } from "lucide-react";
+import { Calendar, CircleUser, Edit2, ImageIcon, Loader2, Mail, Phone, User, VenusAndMars, X, TrendingUp, Award } from "lucide-react";
+import { formatVND } from "@/lib/helper";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -152,17 +153,50 @@ export default function ProfileTab() {
                     <CardTitle className="flex items-center gap-2">
                         <User className="size-5" /> Thông Tin Cá Nhân
                     </CardTitle>
-                    <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="text-xs">
-                            Rank: {user.userRankResponse.name}
-                        </Badge>
-                        <Button variant="outline" size="sm" onClick={toggleEditMode} className="gap-2" disabled={isSaving}>
-                            <Edit2 className="size-4" />
-                            {isEditing ? "Hủy" : "Chỉnh sửa"}
-                        </Button>
-                    </div>
+                    <Button variant="outline" size="sm" onClick={toggleEditMode} className="gap-2" disabled={isSaving}>
+                        <Edit2 className="size-4" />
+                        {isEditing ? "Hủy" : "Chỉnh sửa"}
+                    </Button>
                 </CardHeader>
                 <CardContent>
+                    {/* Rank & Progress*/}
+                    <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950 dark:to-blue-950 rounded-lg border">
+                        <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                                <Award className="w-5 h-5 text-purple-600" />
+                                <span className="font-semibold text-lg">{user.userRankResponse.name}</span>
+                                <Badge variant="secondary" className="ml-2">
+                                    {user.point} điểm
+                                </Badge>
+                            </div>
+                            <TrendingUp className="w-5 h-5 text-blue-600" />
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="space-y-2">
+                            <div className="flex justify-between text-sm text-muted-foreground">
+                                <span>Tiến độ lên hạng</span>
+                                <span className="font-medium text-foreground">
+                                    {formatVND(user.totalSpent)} / {formatVND(user.userRankResponse.minSpent)}
+                                </span>
+                            </div>
+                            <div className="relative h-3 bg-muted rounded-full overflow-hidden">
+                                <div
+                                    className="absolute inset-y-0 left-0 bg-black transition-all duration-500 ease-out rounded-full"
+                                    style={{
+                                        width: `${Math.min((user.totalSpent / user.userRankResponse.minSpent) * 100, 100)}%`,
+                                    }}
+                                >
+                                    <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                                </div>
+                            </div>
+                            <div className="flex justify-between text-xs">
+                                <span className="text-muted-foreground">{((user.totalSpent / user.userRankResponse.minSpent) * 100).toFixed(1)}% hoàn thành</span>
+                                <span className="text-muted-foreground">Còn {formatVND(Math.max(0, user.userRankResponse.minSpent - user.totalSpent))} để lên hạng</span>
+                            </div>
+                        </div>
+                    </div>
+
                     {/* Avatar Section */}
                     <div className="flex items-center justify-center mb-4">
                         <div className="relative">
