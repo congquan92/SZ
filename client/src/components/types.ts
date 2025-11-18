@@ -38,6 +38,7 @@ export interface ProductDetail {
     salePrice: number;
     productStatus: "ACTIVE" | "INACTIVE";
     categoryId: number;
+    categoryParents: { id: number; name: string }[];
     video: string;
     coverImage: string;
     imageProduct: string[];

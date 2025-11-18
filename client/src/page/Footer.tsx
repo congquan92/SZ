@@ -28,7 +28,7 @@ export default function Footer() {
                             </Link>
                         </li>
                         <li>
-                            <Link to="/products" className="hover:text-white">
+                            <Link to="/product" className="hover:text-white">
                                 Sản phẩm
                             </Link>
                         </li>

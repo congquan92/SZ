@@ -69,4 +69,14 @@ export const AuthAPI = {
             throw error;
         }
     },
+
+    loginWithGoogle: async (code: string) => {
+        try {
+            const response = await axiosInstance.post("/auth/social/google", { code });
+            return response;
+        } catch (error) {
+            console.error("Login with Google failed", error);
+            throw error;
+        }
+    },
 };

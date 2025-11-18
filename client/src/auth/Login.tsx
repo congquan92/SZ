@@ -9,6 +9,7 @@ import { Facebook, Globe, Loader } from "lucide-react";
 import { useAuthStore } from "@/stores/useAuthStores";
 import { AuthAPI } from "@/api/auth.api";
 import OTP from "@/auth/OTP";
+import { googleLogin } from "@/auth/gg";
 
 export default function Login() {
     const [formData, setFormData] = useState({
@@ -63,7 +64,7 @@ export default function Login() {
                         <CardContent className="space-y-4">
                             {/* Social login (placeholder) */}
                             <div className="flex flex-col gap-2">
-                                <Button variant="outline" className="w-full flex items-center gap-2 cursor-pointer">
+                                <Button variant="outline" className="w-full flex items-center gap-2 cursor-pointer" onClick={googleLogin}>
                                     <Globe className="w-5 h-5" /> Đăng Nhập Với Google
                                 </Button>
                                 <Button variant="outline" className="w-full flex items-center gap-2 cursor-pointer">

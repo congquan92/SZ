@@ -379,7 +379,6 @@ export default function ProductDetail() {
                 <div className="p-5 md:p-6 space-y-4 max-h-[80vh]">
                     <div className="space-y-2">
                         <h1 className="text-xl md:text-2xl font-semibold leading-tight">{product?.name}</h1>
-                        {product && <p className="text-sm text-muted-foreground line-clamp-2">{product.description}</p>}
                     </div>
 
                     <div className="flex items-center flex-wrap gap-2 text-xs">

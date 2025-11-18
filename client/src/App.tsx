@@ -1,5 +1,6 @@
 import Login from "@/auth/Login";
 import Signup from "@/auth/Signup";
+import AuthCallback from "@/auth/AuthCallback";
 import ClothSize from "@/page/ClothSize";
 import Footer from "@/page/Footer";
 import Home from "@/page/Home";
@@ -20,6 +21,8 @@ import PaymentStatus from "@/page/PaymentStatus";
 import UnauthorizedAccess from "@/page/UnauthorizedAccess";
 import Order from "@/page/Order";
 import ProductCategory from "@/page/ProductCategory";
+import About from "@/page/About";
+import Contact from "@/page/Contact";
 
 function App() {
     const { fetchUser, token, user } = useAuthStore();
@@ -38,6 +41,7 @@ function App() {
         { path: "/", element: <Home /> },
         { path: "/login", element: <Login /> },
         { path: "/signup", element: <Signup /> },
+        { path: "/auth/callback", element: <AuthCallback /> },
         { path: "/product", element: <Product /> },
         { path: "/product/:id/:slug/:description", element: <ProductDetail /> },
         { path: "/cloth-size", element: <ClothSize /> },
@@ -53,6 +57,8 @@ function App() {
         { path: "/payment/cash-return", element: <PaymentStatus /> },
         { path: "/unauthorized", element: <UnauthorizedAccess /> },
         { path: "/category/:id/:slug/:name", element: <ProductCategory /> },
+        { path: "/about", element: <About /> },
+        { path: "/contact", element: <Contact /> },
         { path: "/*", element: <NotFound_404 /> },
     ];
 
