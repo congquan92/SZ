@@ -11,13 +11,14 @@ import { useAuthStore } from "@/stores/useAuthStores";
 import { useCartStore } from "@/stores/useCartStore";
 import { Bell, Heart, LogIn, LogOut, MapPin, Menu, ShoppingCart, Store, User, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Navbar() {
     const [mobileOpen, setMobileOpen] = useState(false);
     const [category, setCategory] = useState<Category[]>();
     const { user, logout } = useAuthStore();
     const { cartCount, fetchCart, clearCart } = useCartStore();
+    const navigate = useNavigate();
 
     const init = async () => {
         // Lấy danh mục sản phẩm
@@ -52,6 +53,7 @@ export default function Navbar() {
         // Xử lý đăng xuất
         logout();
         clearCart();
+        window.location.href = "/";
         console.log("Đăng xuất");
     };
 

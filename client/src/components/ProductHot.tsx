@@ -11,10 +11,13 @@ import ProductDialog from "@/components/ProductDialog";
 import { Link } from "react-router-dom";
 import { FavoriteAPI } from "@/api/favorite.api";
 import { toast } from "sonner";
+import { useAuthStore } from "@/stores/useAuthStores";
+import { recordUserBehavior } from "@/lib/userBehavior";
 
 export default function ProductHot() {
     const [products, setProducts] = useState<Product[]>([]);
     const [selectedProduct, setSelectedProduct] = useState<ProductDetail | null>(null);
+    const {user} = useAuthStore();
 
     const initProducts = async () => {
         const { data } = await ProductAPI.getProductHot(10);
@@ -31,6 +34,7 @@ export default function ProductHot() {
         const data = await ProductAPI.getProductById(id);
         setSelectedProduct(data.data);
         console.log("Product Data:", data.data);
+        recordUserBehavior(id,'VIEW');
     };
     const handelFavorite = (productId: number) => async () => {
         try {
@@ -61,7 +65,7 @@ export default function ProductHot() {
                             </CardContent>
                             <CardFooter className="flex flex-col gap-2 p-3 items-start">
                                 <div className="flex flex-col gap-1">
-                                    <Link to={`/product/${product.id}/${toSlug(product.name)}/${toSlug(product.description)}`} className="text-l font-medium text-gray-700 line-clamp-2 hover:underline">
+                                    <Link to={`/product/${product.id}/${toSlug(product.name)}/${toSlug(product.description)}`} className="text-l font-medium text-gray-700 line-clamp-2 hover:underline" onClick={()=> recordUserBehavior(product.id,'VIEW')}>
                                         {product.name}
                                     </Link>
                                     <div className="flex items-center gap-2">

@@ -13,6 +13,7 @@ import { Link } from "react-router-dom";
 import { FavoriteAPI } from "@/api/favorite.api";
 import { toast } from "sonner";
 import Title from "@/components/Title";
+import { recordUserBehavior } from "@/lib/userBehavior";
 
 export default function ProductCarousel() {
     const [products, setProducts] = useState<Product[]>([]);
@@ -99,7 +100,7 @@ export default function ProductCarousel() {
                                 </CardContent>
                                 <CardFooter className="flex flex-col gap-2 p-3 items-start">
                                     <div className="flex flex-col gap-1 w-full">
-                                        <Link to={`/product/${product.id}/${toSlug(product.name)}/${toSlug(product.description)}`} className="text-sm font-medium text-gray-700 line-clamp-2 hover:underline">
+                                        <Link to={`/product/${product.id}/${toSlug(product.name)}/${toSlug(product.description)}`} className="text-sm font-medium text-gray-700 line-clamp-2 hover:underline" onClick={()=> recordUserBehavior(product.id,'VIEW')}>
                                             {product.name}
                                         </Link>
                                         <div className="flex items-center gap-2">
