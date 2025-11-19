@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { formatVND } from "@/lib/helper";
+import { formatVND, toSlug } from "@/lib/helper";
 import type { DeliveryStatus, OrderItem } from "@/page/type";
 import { OrderAPI } from "@/api/order.api";
 
@@ -11,6 +11,7 @@ import OrderDetailDialog from "@/components/OrderDetailDialog";
 import ReorderDialog from "@/components/ReorderDialog";
 import RepaymentDialog from "@/components/RepaymentDialog";
 import { toast } from "sonner";
+import { Link } from "react-router-dom";
 
 const STATUS_HEADER: Record<DeliveryStatus, string> = {
     PENDING: "Chờ xử lý",
@@ -123,7 +124,9 @@ export default function OrderSection({ status, orders, onRefresh }: Props) {
                                     <div className="flex items-center gap-3">
                                         <img src={it.urlImageSnapShot} alt={it.nameProductSnapShot} className="size-16 object-cover rounded-md border bg-white" />
                                         <div className="flex-1 min-w-0">
-                                            <div className="text-sm font-medium line-clamp-1">{it.nameProductSnapShot}</div>
+                                            <Link to={`/product/${it.productBaseResponse.id}/${toSlug(it.productBaseResponse.name)}/${toSlug(it.productBaseResponse.description)}`} className="hover:underline">
+                                                <div className="text-sm font-medium line-clamp-1">{it.nameProductSnapShot}</div>
+                                            </Link>
                                             <div className="text-xs text-muted-foreground mt-1 flex flex-wrap gap-x-3 gap-y-1">
                                                 {it.productVariantResponse.sku && <span className="whitespace-nowrap">SKU : {it.productVariantResponse.sku}</span>}
                                                 <span className="whitespace-nowrap">{it.productVariantResponse.variantAttributes.map((attr) => attr.attribute + ": " + attr.value).join(", ")}</span>
@@ -131,7 +134,6 @@ export default function OrderSection({ status, orders, onRefresh }: Props) {
                                             </div>
                                             <div className="text-sm text-muted-foreground whitespace-nowrap">x{it.quantity}</div>
                                         </div>
-
                                         <div className="text-sm font-semibold w-28 text-right">{formatVND(it.finalPrice * it.quantity)}</div>
                                     </div>
 

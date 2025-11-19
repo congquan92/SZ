@@ -202,7 +202,7 @@ export default function ProfileTab() {
                         <div className="relative">
                             <Avatar className="h-32 w-32 shrink-0 rounded-full ring-2 ring-border shadow-sm overflow-hidden">
                                 <AvatarImage src={avatarPreview} alt={user.userName} className="h-full w-full object-cover" loading="eager" />
-                                <AvatarFallback className="bg-black text-white font-bold">{user.userName.slice(0, 2).toUpperCase()}</AvatarFallback>
+                                <AvatarFallback className="bg-black text-white font-bold">{user.fullName.slice(0, 2).toUpperCase()}</AvatarFallback>
                             </Avatar>
 
                             {isEditing && (
@@ -234,7 +234,7 @@ export default function ProfileTab() {
                             <Label htmlFor="userName">
                                 <User className="size-5" /> Tên đăng nhập
                             </Label>
-                            <Input id="userName" value={user.userName} disabled className="bg-muted" />
+                            <Input id="userName" value={user.userName ? user.userName : user.fullName} disabled className="bg-muted" />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="email" className="flex items-center gap-2">

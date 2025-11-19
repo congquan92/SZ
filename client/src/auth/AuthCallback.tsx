@@ -38,8 +38,9 @@ export default function AuthCallback() {
                 console.log("Login with Google:", response);
 
                 // Kiểm tra response và lưu token
-                if (response.status === 200 && response.data?.token) {
-                    const token = response.data.token;
+                if (response.status === 200 && response.data.data?.token) {
+                    const token = response.data.data.token;
+                    console.log("Received token:", token);
                     localStorage.setItem("auth_token", token);
 
                     setMessage("Đăng nhập thành công! Đang chuyển hướng...");

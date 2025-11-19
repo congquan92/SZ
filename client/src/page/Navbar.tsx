@@ -115,7 +115,7 @@ export default function Navbar() {
                                     <button className="p-1 rounded-full hover:bg-gray-100 cursor-pointer">
                                         <Avatar className="w-8 h-8">
                                             <AvatarImage src={user?.avatar ?? undefined} alt="User Avatar" className="object-cover" />
-                                            <AvatarFallback className="w-8 h-8 bg-gray-800 text-white flex items-center justify-center rounded-full">{user?.userName?.slice(0, 2).toUpperCase() ?? <User size={16} />}</AvatarFallback>
+                                            <AvatarFallback className="w-8 h-8 bg-gray-800 text-white flex items-center justify-center rounded-full">{user?.fullName?.slice(0, 2).toUpperCase() ?? <User size={16} />}</AvatarFallback>
                                         </Avatar>
 
                                         {/* <Avatar className="w-8 h-8">
@@ -127,7 +127,7 @@ export default function Navbar() {
                                 <DropdownMenuContent align="end" className="w-48 ">
                                     <DropdownMenuItem asChild>
                                         <Link to="/profile" className="flex items-center">
-                                            <User size={16} className="mr-2" /> {user ? user.userName : "Tài khoản"}
+                                            <User size={16} className="mr-2" /> {user ? user.fullName : "Tài khoản"}
                                         </Link>
                                     </DropdownMenuItem>
 
@@ -263,10 +263,10 @@ export default function Navbar() {
                             <div className="p-4 border-b bg-gray-50">
                                 <div className="flex items-center gap-3">
                                     <Avatar className="w-12 h-12">
-                                        <div className="flex items-center justify-center bg-gray-800 text-white rounded-full w-full">{user?.userName?.slice(0, 2).toUpperCase()}</div>
+                                        <div className="flex items-center justify-center bg-gray-800 text-white rounded-full w-full">{user?.fullName?.slice(0, 2).toUpperCase()}</div>
                                     </Avatar>
                                     <div className="flex flex-col">
-                                        <span className="font-medium text-sm">{user?.userName}</span>
+                                        <span className="font-medium text-sm">{user?.fullName}</span>
                                         <span className="text-xs text-muted-foreground">Xin chào!</span>
                                     </div>
                                 </div>

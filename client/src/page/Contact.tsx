@@ -47,7 +47,7 @@ export default function Contact() {
         <div className="container mx-auto px-4 py-8">
             {/* Hero Section */}
             <div className="text-center mb-12">
-                <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Liên Hệ Với Chúng Tôi</h1>
+                <h1 className="text-4xl md:text-5xl font-bold mb-4 ">Liên Hệ Với Chúng Tôi</h1>
                 <p className="text-lg text-muted-foreground max-w-2xl mx-auto">Hãy để chúng tôi biết nếu bạn có bất kỳ câu hỏi nào. Chúng tôi luôn sẵn sàng hỗ trợ!</p>
             </div>
 

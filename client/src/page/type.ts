@@ -118,6 +118,11 @@ interface OrderItemResponse {
             value: string;
         }>;
     };
+    productBaseResponse: {
+        id: number;
+        name: string;
+        description: string;
+    };
 }
 
 export type DeliveryStatus = "CANCELLED" | "COMPLETED" | "CONFIRMED" | "DELIVERED" | "PACKED" | "PENDING" | "REFUNDED" | "SHIPPED";

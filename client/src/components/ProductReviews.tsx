@@ -107,23 +107,20 @@ export default function ProductReviews({
                                       })
                                     : "Không rõ ngày";
 
-                                const userName = review.userResponse?.fullName || review.fullName || "Người dùng";
-                                const userAvatar = review.userResponse?.avatar || review.avatarUser || `https://api.dicebear.com/7.x/avataaars/svg?seed=${review.userResponse?.id || review.id}`;
-
                                 // Kiểm tra xem review này có phải của user đang đăng nhập không
                                 const isMyReview = user && myReviews.some((mr) => mr.id === review.id);
                                 return (
                                     <div key={review.id} className={`border rounded-lg p-4 ${isMyReview ? "bg-blue-50/50 border-blue-200" : ""}`}>
                                         <div className="flex items-start gap-3">
                                             <Avatar>
-                                                <AvatarImage src={userAvatar} />
-                                                <AvatarFallback>{userName?.charAt(0)?.toUpperCase() || "U"}</AvatarFallback>
+                                                <AvatarImage src={review.avatarUser?.trim() ?? undefined} className="h-full w-full object-cover" loading="eager" referrerPolicy="no-referrer" />
+                                                <AvatarFallback className="bg-black text-white font-bold">{review.fullName?.charAt(0)?.toUpperCase() || "U"}</AvatarFallback>
                                             </Avatar>
                                             <div className="flex-1">
                                                 <div className="flex items-center justify-between">
                                                     <div>
                                                         <div className="flex items-center gap-2">
-                                                            <div className="font-medium">{userName}</div>
+                                                            <div className="font-medium">{review.fullName}</div>
                                                             {isMyReview && (
                                                                 <Badge variant="default" className="text-xs bg-blue-600">
                                                                     Đánh giá của bạn

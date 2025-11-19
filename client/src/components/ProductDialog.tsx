@@ -224,7 +224,7 @@ export default function ProductDialog({ open, onClose, product }: Props) {
                 <div className="p-4 space-y-4">
                     <DialogHeader className="space-y-2">
                         <DialogTitle className="text-xl md:text-2xl font-semibold leading-tight text-left">{product.name}</DialogTitle>
-                        {product.description && <p className="text-sm text-muted-foreground line-clamp-2 text-left">{product.description}</p>}
+                        {/* {product.description && <p className="text-sm text-muted-foreground line-clamp-2 text-left">{product.description}</p>} */}
                         {/* {product.video} */}
                     </DialogHeader>
                     <div className="flex items-center flex-wrap gap-2 text-xs">
