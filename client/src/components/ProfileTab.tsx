@@ -201,7 +201,7 @@ export default function ProfileTab() {
                     <div className="flex items-center justify-center mb-4">
                         <div className="relative">
                             <Avatar className="h-32 w-32 shrink-0 rounded-full ring-2 ring-border shadow-sm overflow-hidden">
-                                <AvatarImage src={avatarPreview} alt={user.userName} className="h-full w-full object-cover" loading="eager" />
+                                <AvatarImage src={avatarPreview} alt={user.userName} className="h-full w-full object-cover" loading="eager" referrerPolicy="no-referrer"/>
                                 <AvatarFallback className="bg-black text-white font-bold">{user.fullName.slice(0, 2).toUpperCase()}</AvatarFallback>
                             </Avatar>
 

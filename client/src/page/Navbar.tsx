@@ -114,7 +114,7 @@ export default function Navbar() {
                                 <DropdownMenuTrigger asChild>
                                     <button className="p-1 rounded-full hover:bg-gray-100 cursor-pointer">
                                         <Avatar className="w-8 h-8">
-                                            <AvatarImage src={user?.avatar ?? undefined} alt="User Avatar" className="object-cover" />
+                                            <AvatarImage src={user?.avatar ?? undefined} className="object-cover h-full w-full" loading="eager" referrerPolicy="no-referrer" />
                                             <AvatarFallback className="w-8 h-8 bg-gray-800 text-white flex items-center justify-center rounded-full">{user?.fullName?.slice(0, 2).toUpperCase() ?? <User size={16} />}</AvatarFallback>
                                         </Avatar>
 
@@ -240,7 +240,7 @@ export default function Navbar() {
                         <div className="flex items-center justify-between p-4 border-b">
                             <div className="flex items-center gap-3">
                                 <Avatar className="size-10">
-                                    <AvatarImage src="/logo-shop.jpg" alt="SHOP ZUES" className="object-cover" />
+                                    <AvatarImage src="/logo-shop.jpg" alt="SHOP ZUES" className="object-cover h-full w-full" loading="eager" referrerPolicy="no-referrer" />
                                     <AvatarFallback className="w-10 h-10 bg-black text-white flex items-center justify-center font-bold rounded">SZ</AvatarFallback>
                                 </Avatar>
                                 <div className="flex flex-col">
@@ -263,7 +263,8 @@ export default function Navbar() {
                             <div className="p-4 border-b bg-gray-50">
                                 <div className="flex items-center gap-3">
                                     <Avatar className="w-12 h-12">
-                                        <div className="flex items-center justify-center bg-gray-800 text-white rounded-full w-full">{user?.fullName?.slice(0, 2).toUpperCase()}</div>
+                                        <AvatarImage src={user?.avatar ?? undefined} className="object-cover h-full w-full" loading="eager" referrerPolicy="no-referrer" />
+                                        <AvatarFallback className="w-10 h-10 bg-black text-white flex items-center justify-center font-bold rounded">{user?.fullName?.slice(0, 2).toUpperCase()}</AvatarFallback>
                                     </Avatar>
                                     <div className="flex flex-col">
                                         <span className="font-medium text-sm">{user?.fullName}</span>
