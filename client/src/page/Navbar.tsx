@@ -52,6 +52,7 @@ export default function Navbar() {
         // Xử lý đăng xuất
         logout();
         clearCart();
+        window.location.href = "/";
         console.log("Đăng xuất");
     };
 

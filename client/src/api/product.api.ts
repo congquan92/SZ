@@ -85,4 +85,20 @@ export const ProductAPI = {
             throw error;
         }
     },
+
+    getProductByBehavior: async (size: number, page: number = 0, guestId?: string | null, sort?: string) => {
+        try {
+            const params = new URLSearchParams();
+            params.append("page", page.toString());
+            params.append("size", size.toString());
+            if (sort) params.append("sort", sort);
+            if (guestId) params.append("guestId", guestId);
+
+            const response = await axiosInstance.get(`/product/list/recommend?${params.toString()}`);
+            return response.data;
+        } catch (error) {
+            console.error("Get products by behavior failed", error);
+            throw error;
+        }
+    },
 };

@@ -13,17 +13,21 @@ import { Link } from "react-router-dom";
 import { FavoriteAPI } from "@/api/favorite.api";
 import { toast } from "sonner";
 import Title from "@/components/Title";
-import { recordUserBehavior } from "@/lib/userBehavior";
+import { getGuestId } from "@/lib/userBehavior";
+import { useAuthStore } from "@/stores/useAuthStores";
 
-export default function ProductCarousel() {
+export default function ProductLQ() {
     const [products, setProducts] = useState<Product[]>([]);
     const [selectedProduct, setSelectedProduct] = useState<ProductDetail | null>(null);
     const [loading, setLoading] = useState(true);
+    const { user } = useAuthStore();
 
     const init = useCallback(async () => {
         try {
             setLoading(true);
-            const data = await ProductAPI.getProductSelling(10);
+            const guestIdValue = user ? null : getGuestId();
+            const data = await ProductAPI.getProductByBehavior(10, 0, guestIdValue);
+
             setProducts(data.data.data || []);
         } catch (error) {
             console.error("Failed to load selling products:", error);
@@ -100,11 +104,7 @@ export default function ProductCarousel() {
                                 </CardContent>
                                 <CardFooter className="flex flex-col gap-2 p-3 items-start">
                                     <div className="flex flex-col gap-1 w-full">
-                                        <Link
-                                            to={`/product/${product.id}/${toSlug(product.name)}/${toSlug(product.description)}`}
-                                            className="text-sm font-medium text-gray-700 line-clamp-2 hover:underline"
-                                            onClick={() => recordUserBehavior(product.id, "VIEW")}
-                                        >
+                                        <Link to={`/product/${product.id}/${toSlug(product.name)}/${toSlug(product.description)}`} className="text-sm font-medium text-gray-700 line-clamp-2 hover:underline">
                                             {product.name}
                                         </Link>
                                         <div className="flex items-center gap-2">

@@ -73,8 +73,8 @@ function App() {
                 ))}
             </Routes>
             <Footer />
-            {/* <BackToTop />
-            <PhoneContact /> */}
+            <BackToTop />
+            <PhoneContact />
         </>
     );
 }

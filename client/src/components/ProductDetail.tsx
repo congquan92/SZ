@@ -22,6 +22,7 @@ import type { Review } from "@/components/types";
 import { useAuthStore } from "@/stores/useAuthStores";
 import SizeZoom from "@/components/SizeZoom";
 import EditReviewDialog from "@/components/EditReviewDialog";
+import ProductLQ from "./ProductLQ";
 
 export default function ProductDetail() {
     const { id, slug } = useParams();
@@ -45,7 +46,10 @@ export default function ProductDetail() {
 
     // Size zoom
     const [lightboxOpen, setLightboxOpen] = useState(false);
-    const [lightboxMedia, setLightboxMedia] = useState<{ url: string; isVideo: boolean } | null>(null);
+    const [lightboxMedia, setLightboxMedia] = useState<{
+        url: string;
+        isVideo: boolean;
+    } | null>(null);
     const [zoomLevel, setZoomLevel] = useState(1);
 
     // Edit review dialog
@@ -186,10 +190,21 @@ export default function ProductDetail() {
             const nextPick = { ...pick, [colorName]: colorValue };
             // Reset size if current size is unavailable with new color
             if (sizeAttr && product) {
-                const tryVar = findVariant(product.productVariant, { ...nextPick, [sizeAttr.name]: pick[sizeAttr.name] });
+                const tryVar = findVariant(product.productVariant, {
+                    ...nextPick,
+                    [sizeAttr.name]: pick[sizeAttr.name],
+                });
                 if (!tryVar) {
-                    const firstAvailable = sizeAttr.attributeValue.find((sv) => findVariant(product.productVariant, { ...nextPick, [sizeAttr.name]: sv.value }));
-                    setPick({ ...nextPick, ...(firstAvailable ? { [sizeAttr.name]: firstAvailable.value } : {}) });
+                    const firstAvailable = sizeAttr.attributeValue.find((sv) =>
+                        findVariant(product.productVariant, {
+                            ...nextPick,
+                            [sizeAttr.name]: sv.value,
+                        })
+                    );
+                    setPick({
+                        ...nextPick,
+                        ...(firstAvailable ? { [sizeAttr.name]: firstAvailable.value } : {}),
+                    });
                     return;
                 }
             }
@@ -529,7 +544,7 @@ export default function ProductDetail() {
             {/* Gợi ý sản phẩm */}
             <div className="mt-10">
                 <Title title="Có thể bạn cũng thích" />
-                <div className="mt-4 grid grid-cols-2 gap-4">klasjldj</div>
+                <ProductLQ />
             </div>
         </div>
     );

@@ -5,6 +5,7 @@ import { ProductAPI } from "@/api/product.api";
 import { Link } from "react-router-dom";
 import { calculateDiscountPercent, formatVND, toSlug } from "@/lib/helper";
 import type { Product } from "@/components/types";
+import { recordUserBehavior } from "@/lib/userBehavior";
 
 interface SearchBarProps {
     className?: string;
@@ -103,6 +104,7 @@ export default function SearchBar({ className }: SearchBarProps) {
                                     onClick={() => {
                                         setShowResults(false);
                                         setSearch("");
+                                        recordUserBehavior(product.id, "SEARCH");
                                     }}
                                     className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-md transition-colors"
                                 >

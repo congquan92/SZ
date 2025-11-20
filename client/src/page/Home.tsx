@@ -5,6 +5,7 @@ import ProductHot from "@/components/ProductHot";
 import Title from "@/components/Title";
 import ProductCarousel from "@/components/ProductCarousel";
 import ProductSale from "@/components/ProductSale";
+import ProductLQ from "@/components/ProductLQ";
 
 export default function Home() {
     return (
@@ -12,6 +13,11 @@ export default function Home() {
             {/* Giới thiệu sản phẩm */}
             <div className="mt-3">
                 <BannerCarousel />
+            </div>
+            {/* Sản Phẩm Liên Quan  - */}
+            <div className="mt-3">
+                <Title title="Sản Phẩm Liên Quan" subtitle="Khám Phá Sản Phẩm Liên Quan" />
+                <ProductLQ />
             </div>
 
             {/* Sản Phẩm Mới  - */}
@@ -39,7 +45,7 @@ export default function Home() {
                 <div className="w-full max-w-[1600px] mx-auto mb-3">
                     <img src="https://file.hstatic.net/1000253775/file/flashsale_dk_b277e7264a9c43a190f1bbbd14166c67.jpg" alt="Banner Effect" className="w-full h-auto" />
                 </div>
-                <Title title="Hàng Sale 50%" subtitle="Khám Phá Sản Phẩm Giảm Giá" />
+                <Title title="Hàng Sale" subtitle="Khám Phá Sản Phẩm Giảm Giá" />
                 <ProductSale />
                 <ButtonCenter input="Xem Tất Cả" link="/sale" />
             </div>
