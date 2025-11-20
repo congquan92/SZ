@@ -1,41 +1,24 @@
+import { FavoriteAPI } from "@/api/favorite.api";
 import { ProductAPI } from "@/api/product.api";
+import ProductDialog from "@/components/ProductDialog";
 import type { Product, ProductDetail } from "@/components/types";
-import { useEffect, useState, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { calculateDiscountPercent, formatVND, toSlug } from "@/lib/helper";
-import { Heart } from "lucide-react";
 import { renderStars } from "@/lib/helper.tsx";
-import ProductDialog from "@/components/ProductDialog";
+import { Heart } from "lucide-react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { FavoriteAPI } from "@/api/favorite.api";
 import { toast } from "sonner";
-import Title from "@/components/Title";
-import { recordUserBehavior } from "@/lib/userBehavior";
 
-export default function ProductCarousel() {
-    const [products, setProducts] = useState<Product[]>([]);
+interface Props {
+    products: Product[];
+}
+
+export default function ProductCarousel({ products }: Props) {
     const [selectedProduct, setSelectedProduct] = useState<ProductDetail | null>(null);
-    const [loading, setLoading] = useState(true);
-
-    const init = useCallback(async () => {
-        try {
-            setLoading(true);
-            const data = await ProductAPI.getProductSelling(10);
-            setProducts(data.data.data || []);
-        } catch (error) {
-            console.error("Failed to load selling products:", error);
-            setProducts([]);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        init();
-    }, [init]);
 
     const handleProduct = (productId: number) => async () => {
         try {
@@ -55,21 +38,6 @@ export default function ProductCarousel() {
             toast.error("Thêm vào yêu thích thất bại!");
         }
     };
-
-    if (loading) {
-        return (
-            <div className="container mx-auto p-2">
-                <Title title="Sản phẩm bán chạy" />
-                <div className="text-center py-10">
-                    <p className="text-muted-foreground">Đang tải sản phẩm...</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (!products || products.length === 0) {
-        return null;
-    }
 
     return (
         <div className="container mx-auto p-2 my-8">
@@ -100,11 +68,7 @@ export default function ProductCarousel() {
                                 </CardContent>
                                 <CardFooter className="flex flex-col gap-2 p-3 items-start">
                                     <div className="flex flex-col gap-1 w-full">
-                                        <Link
-                                            to={`/product/${product.id}/${toSlug(product.name)}/${toSlug(product.description)}`}
-                                            className="text-sm font-medium text-gray-700 line-clamp-2 hover:underline"
-                                            onClick={() => recordUserBehavior(product.id, "VIEW")}
-                                        >
+                                        <Link to={`/product/${product.id}/${toSlug(product.name)}/${toSlug(product.description)}`} className="text-sm font-medium text-gray-700 line-clamp-2 hover:underline">
                                             {product.name}
                                         </Link>
                                         <div className="flex items-center gap-2">

@@ -3,9 +3,9 @@ import ButtonCenter from "@/components/ButtonCenter";
 import Gallery from "@/components/Gallery";
 import ProductHot from "@/components/ProductHot";
 import Title from "@/components/Title";
-import ProductCarousel from "@/components/ProductCarousel";
 import ProductSale from "@/components/ProductSale";
 import ProductLQ from "@/components/ProductLQ";
+import ProductBC from "@/components/ProductBC";
 
 export default function Home() {
     return (
@@ -14,9 +14,11 @@ export default function Home() {
             <div className="mt-3">
                 <BannerCarousel />
             </div>
+
             {/* Sản Phẩm Liên Quan  - */}
             <div className="mt-3">
                 <Title title="Sản Phẩm Liên Quan" subtitle="Khám Phá Sản Phẩm Liên Quan" />
+                {/* dung carousel */}
                 <ProductLQ />
             </div>
 
@@ -26,6 +28,7 @@ export default function Home() {
                     <img src="https://cdn.hstatic.net/files/1000253775/file/banner-hang-moi-pc.jpg" alt="Banner Effect" className="w-full h-auto" />
                 </div>
                 <Title title="Sản Phẩm Mới Nhất" subtitle="Khám Phá Sản Phẩm Mới" />
+                {/* dung grid */}
                 <ProductHot />
                 <ButtonCenter input="Xem Tất Cả" link="/product" />
             </div>
@@ -37,7 +40,7 @@ export default function Home() {
                 </div>
                 <Title title="Sản Phẩm Bán Chạy" subtitle="Khám Phá Sản Phẩm Bán Chạy" />
                 {/* dung carousel */}
-                <ProductCarousel />
+                <ProductBC />
             </div>
 
             {/* Hàng Sale 50% -- lấy theo salePrice:asc 10 sản phẩm */}
@@ -46,6 +49,7 @@ export default function Home() {
                     <img src="https://file.hstatic.net/1000253775/file/flashsale_dk_b277e7264a9c43a190f1bbbd14166c67.jpg" alt="Banner Effect" className="w-full h-auto" />
                 </div>
                 <Title title="Hàng Sale" subtitle="Khám Phá Sản Phẩm Giảm Giá" />
+                {/* dung grid */}
                 <ProductSale />
                 <ButtonCenter input="Xem Tất Cả" link="/sale" />
             </div>
