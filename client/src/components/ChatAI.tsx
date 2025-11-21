@@ -16,6 +16,19 @@ interface ChatMessage {
     text: string;
 }
 
+const greetingMessages = [
+    "Êyy bạn trẻ 😎 vô đây tao mix cho bộ đồ nhìn phát mê luôn.",
+    "Ủa alo? 👀 Cần set đồ chất chơi cho dịp gì, nói cái tao xử liền.",
+    "Gì dạ? 😏 Muốn mặc đẹp hay muốn gây lú người ta? Để tao lo.",
+    "Vô đây nè 🤚 tao stylist đây, nói nhu cầu đi tao quăng outfit cho.",
+    "Hê lôooo 🤙 hôm nay tính mặc vibe gì? Chill? Ngầu? Cute? Tao cân hết.",
+    "Rồi rồi, ai gọi stylist đây? 🤨 Kể nhu cầu coi tao phối cho bảnh bao liền.",
+    "Ê bạn 🤝 muốn mặc lên đồ nhìn sang xịn mịn hay nhìn bad boy? Tao set được hết.",
+    "Hôm nay muốn bật mode fashion icon hả 😏 để tao gánh.",
+    "Stylist AI đây 🤖💅 cần outfit đi chơi, đi học hay đi date? Tao quăng đề xuất liền.",
+    "Để tao nói nghe nè 😎 chỉ cần nói mục đích, phần còn lại để tao biến hình cho mày.",
+];
+
 export default function ChatAI() {
     const [open, setOpen] = useState(false);
     const [input, setInput] = useState("");
@@ -24,7 +37,7 @@ export default function ChatAI() {
         {
             id: 1,
             from: "bot",
-            text: "Hello hello 😎 Stylist AI đây. Kể tao nghe mày đang cần set đồ đi đâu, tao mix cho 🔥",
+            text: greetingMessages[Math.floor(Math.random() * greetingMessages.length)],
         },
     ]);
 
