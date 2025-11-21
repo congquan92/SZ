@@ -1,5 +1,6 @@
 import { ProductAPI } from "@/api/product.api";
 import BackToTop from "@/components/BackToTop";
+import ChatAI from "@/components/ChatAI";
 import PhoneContact from "@/components/PhoneContact";
 import SearchBar from "@/components/SearchBar";
 import Topbar from "@/components/Topbar";
@@ -41,7 +42,7 @@ export default function Navbar() {
 
     // Các action trong phần user (dropdown desktop + khu vực mobile)
     const userActionLinks = [
-        { label: "Cửa hàng", to: "/stores", icon: MapPin, desktopOnly: true },
+        { label: "Liên Hệ Cửa Hàng", to: "/contact", icon: MapPin, desktopOnly: true },
         { label: "Đơn hàng", to: "/orders", icon: Store },
         { label: "Yêu thích", to: "/wishlist", icon: Heart },
     ];
@@ -98,12 +99,12 @@ export default function Navbar() {
                             {userActionLinks
                                 .filter((l) => l.desktopOnly)
                                 .map(({ to, label, icon: Icon }) => (
-                                    <Link key={to} to={to} className="hidden md:flex items-center gap-1 hover:underline">
+                                    <Link key={to} to={to} className="hidden md:flex items-center gap-1 hover:underline" onClick={() => scrollToTop()}>
                                         <Icon size={16} /> {label}
                                     </Link>
                                 ))}
 
-                            <Link to="/cart" className="relative p-2 rounded-md hover:bg-gray-100">
+                            <Link to="/cart" className="relative p-2 rounded-md hover:bg-gray-100" onClick={() => scrollToTop()}>
                                 <ShoppingCart size={20} />
                                 {cartCount > 0 && (
                                     <div className="absolute -top-2 -right-2">
@@ -131,7 +132,7 @@ export default function Navbar() {
 
                                 <DropdownMenuContent align="end" className="w-48 ">
                                     <DropdownMenuItem asChild>
-                                        <Link to="/profile" className="flex items-center">
+                                        <Link to="/profile" className="flex items-center" onClick={() => scrollToTop()}>
                                             <User size={16} className="mr-2" /> {user ? user.fullName : "Tài khoản"}
                                         </Link>
                                     </DropdownMenuItem>
@@ -140,7 +141,7 @@ export default function Navbar() {
                                         .filter((l) => !l.desktopOnly)
                                         .map(({ to, label, icon: Icon }) => (
                                             <DropdownMenuItem key={to} asChild>
-                                                <Link to={to} className="flex items-center gap-2">
+                                                <Link to={to} className="flex items-center gap-2" onClick={() => scrollToTop()}>
                                                     <Icon size={16} /> {label}
                                                 </Link>
                                             </DropdownMenuItem>
@@ -152,7 +153,7 @@ export default function Navbar() {
                                                 <LogOut size={16} className="mr-2" /> Đăng xuất
                                             </div>
                                         ) : (
-                                            <Link to="/login" className="flex items-center">
+                                            <Link to="/login" className="flex items-center" onClick={() => scrollToTop()}>
                                                 <LogIn size={16} className="mr-2" /> Đăng nhập
                                             </Link>
                                         )}
@@ -162,7 +163,7 @@ export default function Navbar() {
 
                             {/*Notifications */}
                             <div className="flex items-center">
-                                <Link to="/notifications" className="p-2 rounded-md hover:bg-gray-100 relative">
+                                <Link to="/notifications" className="p-2 rounded-md hover:bg-gray-100 relative" onClick={() => scrollToTop()}>
                                     <Bell size={20} />
                                     <div className="absolute -top-2 -right-1">
                                         <Badge variant="destructive" className="text-xs px-1 min-w-4 h-5">
@@ -276,7 +277,7 @@ export default function Navbar() {
                         {user && (
                             <div className="p-4 border-b bg-gray-50 shrink-0">
                                 <Link to="/profile" className="flex items-center gap-3" onClick={() => setMobileOpen(false)}>
-                                    <Avatar className="w-12 h-12">
+                                    <Avatar className="size-10">
                                         <AvatarImage src={user?.avatar ?? undefined} className="object-cover h-full w-full" loading="eager" referrerPolicy="no-referrer" />
                                         <AvatarFallback className="w-10 h-10 bg-black text-white flex items-center justify-center font-bold rounded">{user?.fullName?.slice(0, 2).toUpperCase()}</AvatarFallback>
                                     </Avatar>
@@ -458,6 +459,7 @@ export default function Navbar() {
             )}
             <BackToTop />
             <PhoneContact />
+            <ChatAI />
         </nav>
     );
 }

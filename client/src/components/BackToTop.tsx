@@ -26,7 +26,7 @@ export default function BackToTop() {
     return (
         <>
             {isVisible && (
-                <Button variant="secondary" onClick={scrollToTop} size="icon" className="fixed bottom-5 right-8 z-50 rounded-none shadow-lg hover:shadow-xl transition-all duration-300 border border-black" aria-label="Về đầu trang">
+                <Button variant="secondary" onClick={() => scrollToTop()} size="icon" className="fixed bottom-5 right-5 z-50 rounded-none shadow-lg hover:shadow-xl transition-all duration-300 border border-black" aria-label="Về đầu trang">
                     <ArrowUp className="w-5 h-5" />
                 </Button>
             )}
