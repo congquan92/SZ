@@ -5,7 +5,7 @@ import { useEffect, useState, useCallback } from "react";
 import Title from "@/components/Title";
 import { getGuestId } from "@/lib/userBehavior";
 import { useAuthStore } from "@/stores/useAuthStores";
-import ProductChungCarosel from "@/components/ProductCarousel";
+import ProductCarousel from "@/components/ProductCarousel";
 
 export default function ProductLQ() {
     const [products, setProducts] = useState<Product[]>([]);
@@ -46,5 +46,5 @@ export default function ProductLQ() {
         return null;
     }
 
-    return <ProductChungCarosel products={products} />;
+    return <ProductCarousel products={products} />;
 }

@@ -11,13 +11,14 @@ import { useAuthStore } from "@/stores/useAuthStores";
 import { useCartStore } from "@/stores/useCartStore";
 import { Bell, Heart, LogIn, LogOut, MapPin, Menu, ShoppingCart, Store, User, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Navbar() {
     const [mobileOpen, setMobileOpen] = useState(false);
     const [category, setCategory] = useState<Category[]>();
     const { user, logout } = useAuthStore();
     const { cartCount, fetchCart, clearCart } = useCartStore();
+    const navigate = useNavigate();
 
     const init = async () => {
         // Lấy danh mục sản phẩm
@@ -191,7 +192,17 @@ export default function Navbar() {
                             {/* Dropdown groups */}
                             {category?.map((top) => (
                                 <NavigationMenuItem key={top.id}>
-                                    <NavigationMenuTrigger>{top.name}</NavigationMenuTrigger>
+                                    <NavigationMenuTrigger
+                                        className={navigationMenuTriggerStyle()}
+                                        onClick={(e) => {
+                                            // Click = điều hướng
+                                            e.preventDefault();
+                                            navigate(`/category/${top.id}/${toSlug(top.name)}/${top.name}`);
+                                        }}
+                                    >
+                                        {top.name}
+                                    </NavigationMenuTrigger>
+
                                     <NavigationMenuContent>
                                         <div className="p-4">
                                             <div className="grid gap-4 min-w-[680px] grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
