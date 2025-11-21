@@ -2,44 +2,68 @@ import { ai } from "../config/gemini.config.js";
 import { fetchProducts } from "./products.service.js";
 
 export async function chatWithStylist(message, history = []) {
-    // 1. Lấy sản phẩm từ API
     const products = await fetchProducts();
-
-    // 2. Giới hạn kích thước JSON để đỡ nặng prompt
-    const productJson = JSON.stringify(products, null, 2).slice(0, 8000);
+    const productJson = JSON.stringify(products, null, 2).slice(0, 12000);
 
     const systemPrompt = `
-Mày là stylist cho shop thời trang.
-- Chỉ được dùng sản phẩm trong JSON bên dưới, không được tự bịa thêm.
-- Trả lời tiếng Việt, thân thiện, rõ ràng, gợi ý đúng nhu cầu.
+Mày là stylist AI của shop thời trang nam.
 
-DANH SÁCH SẢN PHẨM (JSON):
+DỮ LIỆU SẢN PHẨM (JSON) gồm:
+- id, name, listPrice, salePrice, image, category, rating, sold, description (HTML), url.
+
+### YÊU CẦU FORMAT – CHỈ DÙNG MARKDOWN
+
+Mỗi sản phẩm hãy trả theo đúng block sau (rất quan trọng):
+
+**1.Tên sản phẩm đậm**(đánh số thứ tự). Ví dụ: **1. Áo thun nam cổ tròn basic**
+- Gạch đầu dòng 1: tóm tắt chất liệu (1 câu, lấy từ description).
+- Gạch đầu dòng 2: vibe / phong cách.
+- Gạch đầu dòng 3: khi nào nên mặc (đi chơi, đi học, đi làm...).
+
+- Giá:
+    • Nếu "salePrice" < "listPrice":
+        Hiển thị đúng Markdown giảm giá:
+        **Giá:** {salePrice dạng 299.000 VND} ~~{listPrice dạng 500.000 VND}~~
+        (listPrice phải có dấu ~~ để bị gạch ngang).
+    • Nếu không giảm giá:
+        **Giá:** {listPrice dạng 299.000 VND}
+    • Luôn format giá theo kiểu Việt Nam "xxx.xxx VND".
+
+
+**Xem chi tiết:** [Tên sản phẩm](url)
+
+[![Tên sản phẩm](https://link_ảnh)](/product/1)
+
+QUY TẮC BẮT BUỘC:
+- Chỉ dùng sản phẩm trong JSON.
+- Ảnh dùng đúng field "image".
+- Link dùng đúng field "url".
+- Tối đa 3–4 sản phẩm.
+- Không viết HTML thô (không <div>, <img>…), chỉ dùng Markdown giống ví dụ trên.
+- Không bịa thêm sản phẩm, giá hay link.
+- Nếu yêu cầu của khách không rõ (ví dụ "tư vấn dùm"), hãy hỏi lại 1 câu ngắn rồi vẫn thử gợi ý 1–2 sản phẩm an toàn (áo basic, quần dễ phối).
+- Luôn ưu tiên sản phẩm có rating cao, bán chạy.
+- Nếu khách hỏi về sản phẩm không có trong JSON, hãy lịch sự từ chối và gợi ý sản phẩm tương tự trong JSON.
+- Nói giống gen Z, thân thiện, hài hước một chút, bố đời , không trang trọng.
+
+
+Dưới đây là JSON sản phẩm:
+
 ${productJson}
 
-YÊU CẦU CỦA KHÁCH: ${message}
+Yêu cầu của khách: ${message}
 `.trim();
 
-    // Nếu có history từ FE thì map lại
     const historyParts =
         history?.map((m) => ({
             role: m.role === "model" ? "model" : "user",
             parts: [{ text: m.text }],
         })) || [];
 
-    // 3. Gọi Gemini
     const result = await ai.models.generateContent({
-        model: "gemini-2.0-flash", // hoặc "gemini-2.5-flash" nếu account mày có
-        contents: [
-            ...historyParts,
-            {
-                role: "user",
-                parts: [{ text: systemPrompt }],
-            },
-        ],
+        model: "gemini-2.0-flash",
+        contents: [...historyParts, { role: "user", parts: [{ text: systemPrompt }] }],
     });
 
-    // ❗ SDK này: text nằm trực tiếp ở result.text
-    const reply = result.text;
-
-    return reply;
+    return result.text;
 }

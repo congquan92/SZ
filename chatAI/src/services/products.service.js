@@ -1,10 +1,10 @@
 import axios from "axios";
 import dotenv from "dotenv";
-dotenv.config();
 
-const PRODUCT_API_BASE = process.env.PRODUCT_API_BASE || "http://localhost:8080/product/list/detail";
+dotenv.config({ path: "../../.env" });
+const API_PRODUCT = process.env.PRODUCT_API_URL;
 export async function fetchProducts() {
-    const res = await axios.get(PRODUCT_API_BASE);
+    const res = await axios.get(API_PRODUCT);
     return res.data.data.map((p) => ({
         id: p.id,
         name: p.name,
@@ -15,5 +15,6 @@ export async function fetchProducts() {
         category: p.categoryParents[0].name,
         rating: p.avgRating,
         description: p.description,
+        url: `/product/${p.id}`,
     }));
 }
