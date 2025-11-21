@@ -4,7 +4,7 @@ import { db } from "@/lib/firebase";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Package, Truck, CheckCircle2, Clock, XCircle } from "lucide-react";
+import { Bell, Package, Truck, CheckCircle2, Clock, XCircle, type LucideProps } from "lucide-react";
 import { useAuthStore } from "@/stores/useAuthStores";
 
 interface OrderItemResponse {
@@ -28,7 +28,7 @@ interface FirebaseOrdersData {
 
 // Helper functions
 const getDeliveryStatusInfo = (status: string) => {
-    const statusMap: Record<string, { label: string; color: string; icon: any; bgColor: string }> = {
+    const statusMap: Record<string, { label: string; color: string; icon: React.ForwardRefExoticComponent<Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>>; bgColor: string }> = {
         PENDING: { label: "Chờ xác nhận", color: "text-orange-600", icon: Clock, bgColor: "bg-orange-50" },
         CONFIRMED: { label: "Đã xác nhận", color: "text-blue-600", icon: Package, bgColor: "bg-blue-50" },
         SHIPPING: { label: "Đang giao", color: "text-purple-600", icon: Truck, bgColor: "bg-purple-50" },

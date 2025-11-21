@@ -12,7 +12,7 @@ import ProductDetail from "@/components/ProductDetail";
 import Profile from "@/page/Profile";
 import Sale from "@/page/Sale";
 import { useAuthStore } from "@/stores/useAuthStores";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
 import Cart from "@/page/Cart";
 import Payment from "@/page/Payment";
@@ -27,15 +27,13 @@ import Contact from "@/page/Contact";
 function App() {
     const { fetchUser, token, user } = useAuthStore();
 
-    const init = async () => {
-        if (token && !user) {
-            await fetchUser();
-        }
-    };
+    const init = useCallback(() => {
+        if (token && !user) fetchUser();
+    }, [token, user, fetchUser]);
 
     useEffect(() => {
         init();
-    }, []);
+    }, [init]);
 
     const LinkRoute = [
         { path: "/", element: <Home /> },

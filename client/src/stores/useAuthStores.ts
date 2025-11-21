@@ -79,12 +79,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     logout: async () => {
         try {
-            localStorage.removeItem("auth_token");
             await AuthAPI.logout(get().token!);
-            get().clearState();
-            delete axiosInstance.defaults.headers.Authorization;
         } catch (error) {
             console.error("Logout failed ", error);
+        } finally {
+            localStorage.removeItem("auth_token");
+            get().clearState();
         }
     },
 
@@ -93,11 +93,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         try {
             const data = await AuthAPI.getProfile();
             set({ user: data.data });
-        } catch (error) {
-            set({ user: null, token: null });
-            localStorage.removeItem("auth_token");
-            delete axiosInstance.defaults.headers.Authorization;
-            console.error("Fetch user failed ", error);
+        } catch (error: any) {
+            if (error?.response?.status === 401) {
+                set({ user: null, token: null });
+                localStorage.removeItem("auth_token");
+            } else {
+                console.error("Fetch user failed", error);
+            }
         } finally {
             set({ loading: false });
         }
