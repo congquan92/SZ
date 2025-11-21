@@ -1,10 +1,13 @@
 import { ProductAPI } from "@/api/product.api";
+import BackToTop from "@/components/BackToTop";
+import PhoneContact from "@/components/PhoneContact";
 import SearchBar from "@/components/SearchBar";
 import Topbar from "@/components/Topbar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
+import { useSmoothScroll } from "@/hook/useSmoothScroll";
 import { toSlug } from "@/lib/helper";
 import type { Category } from "@/page/type";
 import { useAuthStore } from "@/stores/useAuthStores";
@@ -19,6 +22,7 @@ export default function Navbar() {
     const { user, logout } = useAuthStore();
     const { cartCount, fetchCart, clearCart } = useCartStore();
     const navigate = useNavigate();
+    const { scrollToTop } = useSmoothScroll();
 
     const init = async () => {
         // Lấy danh mục sản phẩm
@@ -54,7 +58,6 @@ export default function Navbar() {
         logout();
         clearCart();
         window.location.href = "/";
-        console.log("Đăng xuất");
     };
 
     const hasChildren = (c?: Category) => !!(c?.childCategory && c.childCategory.length);
@@ -242,14 +245,14 @@ export default function Navbar() {
             </div>
             {/* Mobile menu overlay */}
             {mobileOpen && (
-                <div className="fixed inset-0 z-50 md:hidden ">
+                <div className="fixed inset-0 z-60 md:hidden">
                     {/* Backdrop */}
                     <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity duration-300" onClick={() => setMobileOpen(false)} />
 
                     {/* Off-canvas menu */}
-                    <div className={`fixed left-0 top-0 h-full w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}>
-                        {/* Header */}
-                        <div className="flex items-center justify-between p-4 border-b">
+                    <div className={`fixed left-0 top-0 h-full w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out flex flex-col ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}>
+                        {/* Header - Fixed */}
+                        <div className="flex items-center justify-between p-4 border-b shrink-0">
                             <div className="flex items-center gap-3">
                                 <Avatar className="size-10">
                                     <AvatarImage src="/logo-shop.jpg" alt="SHOP ZUES" className="object-cover h-full w-full" loading="eager" referrerPolicy="no-referrer" />
@@ -265,55 +268,137 @@ export default function Navbar() {
                             </button>
                         </div>
 
-                        {/* Search bar */}
-                        <div className="p-4 border-b">
+                        {/* Search bar - Fixed */}
+                        <div className="p-4 border-b shrink-0">
                             <SearchBar className="w-full" />
                         </div>
 
-                        {/* User info */}
+                        {/* User info - Fixed */}
                         {user && (
-                            <div className="p-4 border-b bg-gray-50">
-                                <div className="flex items-center gap-3">
+                            <div className="p-4 border-b bg-gray-50 shrink-0">
+                                <Link to="/profile" className="flex items-center gap-3" onClick={() => setMobileOpen(false)}>
                                     <Avatar className="w-12 h-12">
                                         <AvatarImage src={user?.avatar ?? undefined} className="object-cover h-full w-full" loading="eager" referrerPolicy="no-referrer" />
                                         <AvatarFallback className="w-10 h-10 bg-black text-white flex items-center justify-center font-bold rounded">{user?.fullName?.slice(0, 2).toUpperCase()}</AvatarFallback>
                                     </Avatar>
                                     <div className="flex flex-col">
-                                        <span className="font-medium text-sm">{user?.fullName}</span>
+                                        <span className="font-medium text-sm hover:underline">{user?.fullName}</span>
                                         <span className="text-xs text-muted-foreground">Xin chào!</span>
                                     </div>
-                                </div>
+                                </Link>
                             </div>
                         )}
 
-                        {/* Menu content */}
-                        <div className="flex-1 overflow-y-auto">
+                        {/* Menu content - Scrollable */}
+                        <div className="flex-1 overflow-y-auto overscroll-contain">
                             <div className="px-4 py-2">
                                 <div className="flex flex-col">
                                     {/* Main navigation */}
                                     <div className="mb-4">
-                                        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-2">Danh mục</h3>
-                                        {[
-                                            ...mainNavLinks,
-                                            // Chèn thêm các nhóm lớn để người dùng mobile truy cập nhanh
-                                            { label: "Áo Nam", to: "/tee" },
-                                            { label: "Quần Nam", to: "/pants" },
-                                            { label: "Bộ Sưu Tập", to: "/collections" },
-                                            { label: "Phụ Kiện", to: "/accessories" },
-                                        ].map((item) => (
-                                            <Link key={item.to} to={item.to} className={`flex items-center px-2 py-3 hover:bg-gray-50 rounded-md transition-colors ${"className" in item ? item.className : ""}`} onClick={() => setMobileOpen(false)}>
+                                        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-2">Menu chính</h3>
+                                        {mainNavLinks.map((item) => (
+                                            <Link
+                                                key={item.to}
+                                                to={item.to}
+                                                className={`flex items-center px-2 py-3 hover:bg-gray-50 rounded-md transition-colors ${"className" in item ? item.className : ""}`}
+                                                onClick={() => {
+                                                    setMobileOpen(false);
+                                                    scrollToTop();
+                                                }}
+                                            >
                                                 <span>{item.label}</span>
                                             </Link>
                                         ))}
                                     </div>
 
+                                    {/* Categories from API */}
+                                    {category && category.length > 0 && (
+                                        <div className="mb-4 border-t pt-4">
+                                            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-2">Danh mục sản phẩm</h3>
+                                            {category.map((top) => (
+                                                <div key={top.id} className="mb-3">
+                                                    {/* Category cấp 1 */}
+                                                    <Link
+                                                        to={`/category/${top.id}/${toSlug(top.name)}/${top.name}`}
+                                                        className="flex items-center px-2 py-2 font-semibold text-sm hover:bg-gray-50 rounded-md transition-colors"
+                                                        onClick={() => {
+                                                            setMobileOpen(false);
+                                                            scrollToTop();
+                                                        }}
+                                                    >
+                                                        {top.name}
+                                                    </Link>
+
+                                                    {/* Category cấp 2 & 3 */}
+                                                    {hasChildren(top) && (
+                                                        <div className="ml-4 mt-1 space-y-1">
+                                                            {top.childCategory!.map((mid) => (
+                                                                <div key={mid.id}>
+                                                                    <Link
+                                                                        to={`/category/${mid.id}/${toSlug(mid.name)}/${mid.name}`}
+                                                                        className="flex items-center px-2 py-1.5 text-sm hover:bg-gray-50 rounded-md transition-colors"
+                                                                        onClick={() => {
+                                                                            setMobileOpen(false);
+                                                                            scrollToTop();
+                                                                        }}
+                                                                    >
+                                                                        {mid.name}
+                                                                    </Link>
+
+                                                                    {/* Category cấp 3 */}
+                                                                    {hasChildren(mid) && (
+                                                                        <div className="ml-4 mt-0.5 space-y-0.5">
+                                                                            {mid.childCategory!.map((sub) => (
+                                                                                <Link
+                                                                                    key={sub.id}
+                                                                                    to={`/category/${sub.id}/${toSlug(sub.name)}/${sub.name}`}
+                                                                                    className="flex items-center px-2 py-1 text-xs text-gray-600 hover:bg-gray-50 rounded-md transition-colors"
+                                                                                    onClick={() => {
+                                                                                        setMobileOpen(false);
+                                                                                        scrollToTop();
+                                                                                    }}
+                                                                                >
+                                                                                    • {sub.name}
+                                                                                </Link>
+                                                                            ))}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
                                     {/* User actions */}
-                                    <div className="border-t pt-4">
+                                    <div className="border-t pt-4 pb-4">
                                         <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-2">Tài khoản</h3>
 
-                                        {/* Cửa hàng + các link tài khoản (re-use) */}
-                                        {[{ label: "Cửa hàng", to: "/stores", icon: MapPin }, ...userActionLinks.filter((l) => !l.desktopOnly)].map(({ to, label, icon: Icon }) => (
-                                            <Link key={to} to={to} className="flex items-center gap-3 px-2 py-3 hover:bg-gray-50 rounded-md transition-colors" onClick={() => setMobileOpen(false)}>
+                                        {/* Link tài khoản */}
+                                        <Link
+                                            to="/profile"
+                                            className="flex items-center gap-3 px-2 py-3 hover:bg-gray-50 rounded-md transition-colors"
+                                            onClick={() => {
+                                                setMobileOpen(false);
+                                                scrollToTop();
+                                            }}
+                                        >
+                                            <User size={18} className="text-gray-500" />
+                                            <span>{user ? user.fullName : "Tài khoản"}</span>
+                                        </Link>
+
+                                        {userActionLinks.map(({ to, label, icon: Icon }) => (
+                                            <Link
+                                                key={to}
+                                                to={to}
+                                                className="flex items-center gap-3 px-2 py-3 hover:bg-gray-50 rounded-md transition-colors"
+                                                onClick={() => {
+                                                    setMobileOpen(false);
+                                                    scrollToTop();
+                                                }}
+                                            >
                                                 <Icon size={18} className="text-gray-500" />
                                                 <span>{label}</span>
                                             </Link>
@@ -324,9 +409,10 @@ export default function Navbar() {
                                             className="flex items-center gap-3 px-2 py-3 hover:bg-gray-50 rounded-md transition-colors cursor-pointer"
                                             onClick={() => {
                                                 if (user) {
-                                                    logout();
+                                                    handleLogout();
                                                 }
                                                 setMobileOpen(false);
+                                                scrollToTop();
                                             }}
                                         >
                                             {user ? (
@@ -335,7 +421,14 @@ export default function Navbar() {
                                                     <span>Đăng xuất</span>
                                                 </>
                                             ) : (
-                                                <Link to="/login" className="flex items-center gap-3">
+                                                <Link
+                                                    to="/login"
+                                                    className="flex items-center gap-3"
+                                                    onClick={() => {
+                                                        setMobileOpen(false);
+                                                        scrollToTop();
+                                                    }}
+                                                >
                                                     <LogIn size={18} className="text-gray-500" />
                                                     <span>Đăng nhập</span>
                                                 </Link>
@@ -346,10 +439,17 @@ export default function Navbar() {
                             </div>
                         </div>
 
-                        {/* Footer */}
-                        <div className="p-4 border-t bg-gray-50">
+                        {/* Footer - Fixed */}
+                        <div className="p-4 border-t bg-gray-50 shrink-0">
                             <div className="flex items-center justify-center gap-4 text-sm text-gray-500">
-                                <Link to="notifications" className="flex items-center gap-1 hover:underline">
+                                <Link
+                                    to="/notifications"
+                                    className="flex items-center gap-1 hover:underline"
+                                    onClick={() => {
+                                        setMobileOpen(false);
+                                        scrollToTop();
+                                    }}
+                                >
                                     <Bell size={16} /> Thông báo
                                 </Link>
                             </div>
@@ -357,6 +457,8 @@ export default function Navbar() {
                     </div>
                 </div>
             )}
+            <BackToTop />
+            <PhoneContact />
         </nav>
     );
 }

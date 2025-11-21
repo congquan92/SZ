@@ -23,8 +23,6 @@ import Order from "@/page/Order";
 import ProductCategory from "@/page/ProductCategory";
 import About from "@/page/About";
 import Contact from "@/page/Contact";
-import BackToTop from "@/components/BackToTop";
-import PhoneContact from "@/components/PhoneContact";
 
 function App() {
     const { fetchUser, token, user } = useAuthStore();
@@ -73,8 +71,6 @@ function App() {
                 ))}
             </Routes>
             <Footer />
-            <BackToTop />
-            <PhoneContact />
         </>
     );
 }
