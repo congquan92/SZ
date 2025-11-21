@@ -6,7 +6,7 @@ import Topbar from "@/components/Topbar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
+import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/navigation-menu";
 import { useSmoothScroll } from "@/hook/useSmoothScroll";
 import { toSlug } from "@/lib/helper";
 import type { Category } from "@/page/type";
@@ -184,7 +184,7 @@ export default function Navbar() {
                             {/* Simple links */}
                             {mainNavLinks.map(({ to, label, className }) => (
                                 <NavigationMenuItem key={to}>
-                                    <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                                    <NavigationMenuLink asChild>
                                         <Link to={to} className={`px-4 py-3 font-medium hover:text-black ${className || ""}`}>
                                             {label}
                                         </Link>
@@ -196,7 +196,6 @@ export default function Navbar() {
                             {category?.map((top) => (
                                 <NavigationMenuItem key={top.id}>
                                     <NavigationMenuTrigger
-                                        className={navigationMenuTriggerStyle()}
                                         onClick={(e) => {
                                             // Click = điều hướng
                                             e.preventDefault();

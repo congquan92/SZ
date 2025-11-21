@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { AuthAPI } from "@/api/auth.api";
-import { axiosInstance } from "@/lib/axios";
 
 interface User {
     id: number;
@@ -93,13 +92,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         try {
             const data = await AuthAPI.getProfile();
             set({ user: data.data });
-        } catch (error: any) {
-            if (error?.response?.status === 401) {
-                set({ user: null, token: null });
-                localStorage.removeItem("auth_token");
-            } else {
-                console.error("Fetch user failed", error);
-            }
+        } catch (error) {
+            console.error("Fetch user failed", error);
+            // Không xóa token, vì axios interceptor sẽ refresh
         } finally {
             set({ loading: false });
         }
