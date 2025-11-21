@@ -4,18 +4,16 @@ import { useEffect, useState, useCallback } from "react";
 
 import Title from "@/components/Title";
 import { getGuestId } from "@/lib/userBehavior";
-import { useAuthStore } from "@/stores/useAuthStores";
 import ProductCarousel from "@/components/ProductCarousel";
 
 export default function ProductLQ() {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
-    const { user } = useAuthStore();
 
     const init = useCallback(async () => {
         try {
             setLoading(true);
-            const guestIdValue = user ? null : getGuestId();
+            const guestIdValue = getGuestId();
             const data = await ProductAPI.getProductByBehavior(10, 0, guestIdValue);
 
             setProducts(data.data.data || []);
@@ -25,7 +23,7 @@ export default function ProductLQ() {
         } finally {
             setLoading(false);
         }
-    }, [user]);
+    }, []);
 
     useEffect(() => {
         init();

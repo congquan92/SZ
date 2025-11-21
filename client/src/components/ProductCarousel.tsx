@@ -6,8 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { useSmoothScroll } from "@/hook/useSmoothScroll";
 import { calculateDiscountPercent, formatVND, toSlug } from "@/lib/helper";
 import { renderStars } from "@/lib/helper.tsx";
+import { recordUserBehavior } from "@/lib/userBehavior";
 import { Heart } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -18,11 +20,13 @@ interface Props {
 }
 
 export default function ProductCarousel({ products }: Props) {
+    const { scrollToTop } = useSmoothScroll();
     const [selectedProduct, setSelectedProduct] = useState<ProductDetail | null>(null);
 
     const handleProduct = (productId: number) => async () => {
         try {
             const data = await ProductAPI.getProductById(productId);
+            recordUserBehavior(productId, "VIEW");
             setSelectedProduct(data.data);
         } catch (error) {
             console.error("Failed to load product detail:", error);
@@ -68,7 +72,14 @@ export default function ProductCarousel({ products }: Props) {
                                 </CardContent>
                                 <CardFooter className="flex flex-col gap-2 p-3 items-start">
                                     <div className="flex flex-col gap-1 w-full">
-                                        <Link to={`/product/${product.id}/${toSlug(product.name)}/${toSlug(product.description)}`} className="text-sm font-medium text-gray-700 line-clamp-2 hover:underline">
+                                        <Link
+                                            to={`/product/${product.id}/${toSlug(product.name)}/${toSlug(product.description)}`}
+                                            className="text-sm font-medium text-gray-700 line-clamp-2 hover:underline"
+                                            onClick={() => {
+                                                recordUserBehavior(product.id, "VIEW");
+                                                scrollToTop();
+                                            }}
+                                        >
                                             {product.name}
                                         </Link>
                                         <div className="flex items-center gap-2">

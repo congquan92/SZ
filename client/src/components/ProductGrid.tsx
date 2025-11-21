@@ -5,6 +5,7 @@ import type { Product, ProductDetail } from "@/components/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { useSmoothScroll } from "@/hook/useSmoothScroll";
 import { calculateDiscountPercent, formatVND, toSlug } from "@/lib/helper";
 import { renderStars } from "@/lib/helper.tsx";
 import { recordUserBehavior } from "@/lib/userBehavior";
@@ -19,6 +20,7 @@ interface Props {
 
 export default function ProductChungGrid({ products }: Props) {
     const [selectedProduct, setSelectedProduct] = useState<ProductDetail | null>(null);
+    const { scrollToTop } = useSmoothScroll();
 
     const handleProduct = (productId: number) => async () => {
         try {
@@ -65,7 +67,10 @@ export default function ProductChungGrid({ products }: Props) {
                                     <Link
                                         to={`/product/${product.id}/${toSlug(product.name)}/${toSlug(product.description)}`}
                                         className="text-l font-medium text-gray-700 line-clamp-2 hover:underline"
-                                        onClick={() => recordUserBehavior(product.id, "VIEW")}
+                                        onClick={() => {
+                                            recordUserBehavior(product.id, "VIEW");
+                                            scrollToTop();
+                                        }}
                                     >
                                         {product.name}
                                     </Link>
