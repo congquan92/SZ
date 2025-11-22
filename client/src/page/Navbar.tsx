@@ -16,6 +16,8 @@ import { useCartStore } from "@/stores/useCartStore";
 import { Bell, Heart, LogIn, LogOut, MapPin, Menu, ShoppingCart, Store, User, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { ref, onValue } from "firebase/database";
+import { db } from "@/lib/firebase";
 
 export default function Navbar() {
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -24,6 +26,7 @@ export default function Navbar() {
     const { cartCount, fetchCart, clearCart } = useCartStore();
     const navigate = useNavigate();
     const { scrollToTop } = useSmoothScroll();
+    const [notificationCount, setNotificationCount] = useState(0);
 
     const init = async () => {
         // Lấy danh mục sản phẩm
@@ -39,6 +42,39 @@ export default function Navbar() {
             fetchCart();
         }
     }, [user, fetchCart]);
+
+    // Lắng nghe thay đổi đơn hàng từ Firebase để cập nhật thông báo chưa đọc
+    useEffect(() => {
+        if (!user?.id) {
+            setNotificationCount(0);
+            return;
+        }
+
+        const notifRef = ref(db, `users/${user.id}/orders`);
+
+        const unsubscribe = onValue(
+            notifRef,
+            (snapshot) => {
+                const data = snapshot.val();
+
+                if (!data) {
+                    setNotificationCount(0);
+                    return;
+                }
+
+                // Đếm số thông báo chưa đọc (read === false hoặc không có field read)
+                const orders = Object.values(data) as Array<{ read?: boolean }>;
+                const unreadCount = orders.filter((order) => order.read === false || order.read === undefined).length;
+
+                setNotificationCount(unreadCount);
+            },
+            (err) => {
+                console.error("Firebase error:", err);
+            }
+        );
+
+        return () => unsubscribe();
+    }, [user?.id]);
 
     // Các action trong phần user (dropdown desktop + khu vực mobile)
     const userActionLinks = [
@@ -165,11 +201,13 @@ export default function Navbar() {
                             <div className="flex items-center">
                                 <Link to="/notifications" className="p-2 rounded-md hover:bg-gray-100 relative" onClick={() => scrollToTop()}>
                                     <Bell size={20} />
-                                    <div className="absolute -top-2 -right-1">
-                                        <Badge variant="destructive" className="text-xs px-1 min-w-4 h-5">
-                                            5
-                                        </Badge>
-                                    </div>
+                                    {notificationCount > 0 && (
+                                        <div className="absolute -top-2 -right-1">
+                                            <Badge variant="destructive" className="text-xs px-1 min-w-4 h-5">
+                                                {notificationCount}
+                                            </Badge>
+                                        </div>
+                                    )}
                                 </Link>
                             </div>
                         </div>

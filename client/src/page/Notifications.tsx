@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ref, onValue } from "firebase/database";
+import { ref, onValue, update } from "firebase/database";
 import { db } from "@/lib/firebase";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +20,7 @@ interface FirebaseOrder {
     paymentStatus: string;
     paymentType: string;
     orderItemResponses: OrderItemResponse[];
+    read?: boolean;
 }
 
 interface FirebaseOrdersData {
@@ -89,6 +90,21 @@ export default function Notifications() {
                 list.sort((a, b) => b.id - a.id);
                 setOrders(list);
                 setLoading(false);
+
+                // Đánh dấu tất cả thông báo là đã đọc
+                const updates: Record<string, boolean> = {};
+                Object.keys(data).forEach((key) => {
+                    const order = data[key];
+                    if (order.read === false || order.read === undefined) {
+                        updates[`${key}/read`] = true;
+                    }
+                });
+
+                if (Object.keys(updates).length > 0) {
+                    update(ordersRef, updates).catch((err) => {
+                        console.error("Failed to mark as read:", err);
+                    });
+                }
             },
             (err) => {
                 console.error(" Firebase error:", err);

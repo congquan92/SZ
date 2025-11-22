@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-
+import { ref, onValue } from "firebase/database";
+import { db } from "@/lib/firebase";
 import { Search, PackageCheck, Truck, Clock, Ban, Box, CheckCircle, Home } from "lucide-react";
 import { OrderAPI } from "@/api/order.api";
 import type { DeliveryStatus, OrderItem } from "@/page/type";
@@ -30,7 +31,7 @@ export default function OrderPage() {
     const [orders, setOrders] = useState<OrderItem[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const init = async () => {
+    const init = useCallback(async () => {
         try {
             setLoading(true);
             const response = await OrderAPI.getOrderAll();
@@ -41,12 +42,38 @@ export default function OrderPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
+    // Lần đầu khi có user -> load danh sách
     useEffect(() => {
         if (!user) return;
         init();
-    }, [user]);
+    }, [user, init]);
+
+    // Lắng nghe realtime từ Firebase -> có thay đổi là refetch
+    useEffect(() => {
+        if (!user?.id) return;
+
+        const ordersRef = ref(db, `users/${user.id}/orders`);
+
+        const unsubscribe = onValue(
+            ordersRef,
+            (snapshot) => {
+                const data = snapshot.val();
+                console.log("Firebase orders changed:", data);
+
+                // Chỉ cần có thay đổi là gọi lại init để sync list
+                init();
+            },
+            (err) => {
+                console.error("Firebase error in OrderPage:", err);
+            }
+        );
+
+        return () => {
+            unsubscribe();
+        };
+    }, [user?.id, init]);
 
     // Filter orders
     const filtered = useMemo(() => {
@@ -54,7 +81,6 @@ export default function OrderPage() {
         if (active !== "ALL") list = list.filter((o) => o.deliveryStatus === active);
         if (q.trim()) {
             const kw = q.trim().toLowerCase();
-            //Mã đơn hàng, SKU, Tên sản phẩm
             list = list.filter((o) => o.id.toString().toLowerCase().includes(kw) || o.orderItemResponses.some((it) => it.productVariantResponse.sku.toLowerCase().includes(kw) || it.nameProductSnapShot.toLowerCase().includes(kw)));
         }
         return list;
@@ -70,6 +96,7 @@ export default function OrderPage() {
         });
 
         const orderStatus: DeliveryStatus[] = ["PENDING", "CONFIRMED", "PACKED", "SHIPPED", "DELIVERED", "COMPLETED", "CANCELLED", "REFUNDED"];
+
         return orderStatus.filter((s) => (map.get(s)?.length || 0) > 0).map((s) => ({ status: s, orders: map.get(s)! }));
     }, [filtered]);
 
