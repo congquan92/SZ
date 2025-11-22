@@ -34,6 +34,9 @@ const getDeliveryStatusInfo = (status: string) => {
         SHIPPING: { label: "Đang giao", color: "text-purple-600", icon: Truck, bgColor: "bg-purple-50" },
         DELIVERED: { label: "Đã giao", color: "text-green-600", icon: CheckCircle2, bgColor: "bg-green-50" },
         CANCELLED: { label: "Đã hủy", color: "text-red-600", icon: XCircle, bgColor: "bg-red-50" },
+        REFUNDED: { label: "Đã hoàn tiền", color: "text-red-600", icon: XCircle, bgColor: "bg-red-50" },
+        PACKED: { label: "Đã đóng gói", color: "text-teal-600", icon: Package, bgColor: "bg-teal-50" },
+        COMPLETED: { label: "Hoàn thành", color: "text-green-600", icon: CheckCircle2, bgColor: "bg-green-50" },
     };
     return statusMap[status] || statusMap.PENDING;
 };
@@ -74,7 +77,7 @@ export default function Notifications() {
             ordersRef,
             (snapshot) => {
                 const data = snapshot.val() as FirebaseOrdersData | null;
-                console.log("🔥 Firebase snapshot:", data);
+                console.log(" Firebase snapshot:", data);
 
                 if (!data) {
                     setOrders([]);
@@ -88,7 +91,7 @@ export default function Notifications() {
                 setLoading(false);
             },
             (err) => {
-                console.error("🔥 Firebase error:", err);
+                console.error(" Firebase error:", err);
                 setError(err.message);
                 setLoading(false);
             }
