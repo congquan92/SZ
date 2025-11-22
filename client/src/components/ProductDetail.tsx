@@ -4,7 +4,7 @@ import type { ProductDetail as ProductDetailType } from "@/components/types";
 import { Badge } from "@/components/ui/badge";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from "@/components/ui/carousel";
 import { renderStars } from "@/lib/helper.tsx";
-import { calculateDiscountPercent, findVariant, formatVND, hasVariantWithSelection } from "@/lib/helper";
+import { calculateDiscountPercent, findVariant, formatVND, hasVariantWithSelection, toSlug } from "@/lib/helper";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -338,7 +338,7 @@ export default function ProductDetail() {
 
     return (
         <div className="container mx-auto p-2">
-            <BreadcrumbCustom title="Sản phẩm" link_title="/product" subtitle={slug ?? ""} />
+            <BreadcrumbCustom title={`${product?.categoryParents?.[0]?.name}`} link_title={`/category/${product?.categoryParents?.[0]?.id}/${toSlug(product?.categoryParents?.[0]?.name)}`} subtitle={slug ?? ""} />
 
             {/* chia 2 cột */}
             <div className="grid grid-cols-1 md:grid-cols-2">

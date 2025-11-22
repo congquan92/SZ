@@ -103,7 +103,7 @@ export default function OrderDetailDialog({ orderId }: { orderId: number }) {
                                 {orderDetail.orderItemResponses.map((item) => (
                                     <div key={item.orderItemId} className="p-4">
                                         <div className="flex gap-4">
-                                            <img src={item.urlImageSnapShot} alt={item.nameProductSnapShot} className="size-20 object-cover rounded-md border bg-white flex-shrink-0" />
+                                            <img src={item.urlImageSnapShot} alt={item.nameProductSnapShot} className="size-20 object-cover rounded-md border bg-white shrink-0" />
                                             <div className="flex-1 min-w-0">
                                                 <div className="font-medium line-clamp-2">{item.nameProductSnapShot}</div>
                                                 <div className="text-sm text-muted-foreground mt-1 space-y-1">

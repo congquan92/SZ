@@ -32,7 +32,7 @@ Mỗi sản phẩm hãy trả theo đúng block sau (rất quan trọng):
 
 **Xem chi tiết:** [Tên sản phẩm](url)
 
-[![Tên sản phẩm](https://link_ảnh)](/product/1)
+[![Tên sản phẩm](https://link_ảnh)](url)
 
 QUY TẮC BẮT BUỘC:
 - Chỉ dùng sản phẩm trong JSON.
