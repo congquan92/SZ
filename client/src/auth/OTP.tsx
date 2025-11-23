@@ -38,7 +38,7 @@ export default function OTP({ email, id_user, onBack, onLogin }: { email: string
     const handleResend = () => {
         setTimeLeft(300);
         setResendAvailable(false);
-        fetch(`${import.meta.env.VITE_LOCAL_API}/otp/send?userId=${iduser}&otpType=VERIFICATION`, {
+        fetch(`${import.meta.env.VITE_API_URL}/otp/send?userId=${id_user}&otpType=VERIFICATION`, {
             method: "POST",
         });
         toast.info("Mã OTP mới đã được gửi lại vào email của bạn");

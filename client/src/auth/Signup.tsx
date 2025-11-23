@@ -60,6 +60,7 @@ export default function Signup() {
         setMessage("");
         try {
             const d = await signup(formData.fullName, formData.gender, formData.dateOfBirth, formData.email, formData.phone, formData.username, formData.password);
+            console.log("Signup data:", d);
             setUserId(d.data);
             await AuthAPI.sendOTP(d.data);
             setStep("verify");
