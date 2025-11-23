@@ -23,6 +23,8 @@ import Order from "@/page/Order";
 import ProductCategory from "@/page/ProductCategory";
 import About from "@/page/About";
 import Contact from "@/page/Contact";
+import Privacy from "@/page/Privacy";
+import Return from "@/page/Return";
 
 function App() {
     const { fetchUser, token, user } = useAuthStore();
@@ -57,6 +59,8 @@ function App() {
         { path: "/category/:id/:slug/:name", element: <ProductCategory /> },
         { path: "/about", element: <About /> },
         { path: "/contact", element: <Contact /> },
+        { path: "/privacy", element: <Privacy /> },
+        { path: "/returns", element: <Return /> },
         { path: "/*", element: <NotFound_404 /> },
     ];
 

@@ -10,6 +10,7 @@ import ReviewDialog from "@/components/ReviewDialog";
 import OrderDetailDialog from "@/components/OrderDetailDialog";
 import ReorderDialog from "@/components/ReorderDialog";
 import RepaymentDialog from "@/components/RepaymentDialog";
+// import ReturnDialog from "@/components/ReturnDialog";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 
@@ -75,6 +76,12 @@ function renderActions(status: DeliveryStatus, orderId: number, order: OrderItem
             </Button>
         );
     }
+
+    // TODO hoàn hàng làm sau
+    // Hoàn hàng - hiển thị khi đơn đã hoàn thành và đã xác nhận
+    // if (status === "COMPLETED" && !order.isConfimed) {
+    //     actions.push(<ReturnDialog key="return" order={order} onSuccess={onRefresh} />);
+    // }
 
     // Mua lại
     if (canReorderStatuses.includes(status)) {

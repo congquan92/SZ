@@ -21,7 +21,7 @@ const STATUS_TABS: { key: "ALL" | DeliveryStatus; label: string; icon?: React.Co
     { key: "DELIVERED", label: "Đã giao", icon: PackageCheck },
     { key: "COMPLETED", label: "Hoàn thành", icon: PackageCheck },
     { key: "CANCELLED", label: "Đã huỷ", icon: Ban },
-    { key: "REFUNDED", label: "Hoàn tiền", icon: Ban },
+    // { key: "REFUNDED", label: "Hoàn tiền", icon: Ban },
 ];
 
 export default function OrderPage() {
@@ -61,7 +61,6 @@ export default function OrderPage() {
             (snapshot) => {
                 const data = snapshot.val();
                 console.log("Firebase orders changed:", data);
-
                 // Chỉ cần có thay đổi là gọi lại init để sync list
                 init();
             },

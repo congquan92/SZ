@@ -74,5 +74,13 @@ export const OrderAPI = {
             throw error;
         }
     },
-    // getOeder,
+    returnOrder: async (orderId: number, reason: string, imageReturnOrder: string[], items: { orderItemId: number; quantity: number }[]) => {
+        try {
+            const response = await axiosInstance.post(`/return_order/add`, { orderId, reason, imageReturnOrder, items });
+            return response.data;
+        } catch (error) {
+            console.error("Return order failed", error);
+            throw error;
+        }
+    },
 };

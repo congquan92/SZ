@@ -1,144 +1,63 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Store, Target, Users, Heart, TrendingUp, Award, Shield, Truck } from "lucide-react";
-
 export default function About() {
     return (
-        <div className="container mx-auto px-4 py-8">
-            {/* Hero Section */}
-            <div className="text-center mb-12">
-                <h1 className="text-4xl md:text-5xl font-bold mb-4">Về Chúng Tôi</h1>
-                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">Chào mừng đến với SZ - Điểm đến thời trang hàng đầu dành cho bạn</p>
-            </div>
+        <div className="bg-white">
+            <div className="container mx-auto px-4 py-12 lg:py-20">
+                {/* Heading trung tâm */}
+                <div className="text-center mb-12 lg:mb-16">
+                    <p className="tracking-[0.35em] text-xs md:text-sm uppercase text-muted-foreground mb-3">VỀ CHÚNG TÔI</p>
+                    <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-[0.08em]">THƯƠNG HIỆU THỜI TRANG NAM SZ</h1>
+                </div>
 
-            {/* Company Info */}
-            <Card className="mb-8">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Store className="w-6 h-6" />
-                        Câu Chuyện Của Chúng Tôi
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <p className="text-muted-foreground leading-relaxed">
-                        SZ được thành lập với sứ mệnh mang đến những sản phẩm thời trang chất lượng cao, phù hợp với mọi phong cách và túi tiền. Chúng tôi tin rằng thời trang không chỉ là về vẻ ngoài, mà còn là cách bạn thể hiện bản thân và tạo nên
-                        phong cách riêng.
-                    </p>
-                    <p className="text-muted-foreground leading-relaxed">
-                        Với đội ngũ chuyên nghiệp và tâm huyết, chúng tôi không ngừng tìm kiếm và cập nhật những xu hướng mới nhất, đồng thời cam kết mang đến trải nghiệm mua sắm tuyệt vời nhất cho khách hàng.
-                    </p>
-                </CardContent>
-            </Card>
+                {/* BLOCK 1 — HÌNH TRÁI / CÂU CHUYỆN THƯƠNG HIỆU BÊN PHẢI */}
+                <section className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center mb-20 lg:mb-24">
+                    {/* Hình minh họa */}
+                    <div className="w-full">
+                        <img src="/about01_introduce1_img.jpg" alt="Bộ sưu tập thời trang SZ" className="w-full h-auto object-cover" />
+                    </div>
 
-            {/* Mission & Vision */}
-            <div className="grid md:grid-cols-2 gap-6 mb-8">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Target className="w-5 h-5 text-blue-600" />
-                            Sứ Mệnh
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-muted-foreground leading-relaxed">Cung cấp sản phẩm thời trang chất lượng cao với giá cả hợp lý, giúp mọi người tự tin thể hiện phong cách và cá tính riêng của mình.</p>
-                    </CardContent>
-                </Card>
+                    {/* Text */}
+                    <div className="space-y-4 text-sm md:text-base leading-relaxed text-muted-foreground">
+                        <p className="tracking-[0.35em] text-xs md:text-sm uppercase text-muted-foreground">SZ BRAND</p>
+                        <h2 className="text-2xl md:text-3xl font-semibold tracking-[0.08em] mb-2 text-foreground">CÂU CHUYỆN THƯƠNG HIỆU</h2>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <TrendingUp className="w-5 h-5 text-purple-600" />
-                            Tầm Nhìn
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-muted-foreground leading-relaxed">Trở thành thương hiệu thời trang hàng đầu Việt Nam, được khách hàng tin tưởng và lựa chọn bởi chất lượng sản phẩm và dịch vụ xuất sắc.</p>
-                    </CardContent>
-                </Card>
-            </div>
+                        <p>
+                            SZ là thương hiệu thời trang nam được định hướng theo phong cách hiện đại, lịch lãm và trẻ trung. Từ những ngày đầu thành lập, chúng tôi luôn theo đuổi mục tiêu mang lại cho phái mạnh những lựa chọn trang phục chỉn chu
+                            nhưng vẫn thoải mái, dễ ứng dụng trong mọi hoàn cảnh.
+                        </p>
+                        <p>Trải qua quá trình phát triển, SZ dần xây dựng hệ thống cửa hàng và kênh bán hàng online trên toàn quốc, giúp khách hàng dễ dàng tiếp cận sản phẩm chất lượng với mức giá hợp lý.</p>
+                        <p>Mỗi sản phẩm tại SZ đều được chọn lọc kỹ từ chất liệu đến form dáng, hướng tới sự tối giản, tinh tế và dễ phối đồ trong cuộc sống hàng ngày.</p>
+                        <p>Phong cách của SZ tập trung vào sự gọn gàng, thanh lịch nhưng vẫn gần gũi, dễ mặc. Các dòng sản phẩm như áo polo, sơ mi, quần tây, quần jean… đều được thiết kế theo form chuẩn, dễ chọn size cho khách hàng Việt.</p>
+                    </div>
+                </section>
 
-            {/* Core Values */}
-            <Card className="mb-8">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Heart className="w-6 h-6 text-red-600" />
-                        Giá Trị Cốt Lõi
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <div className="text-center space-y-3">
-                            <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto">
-                                <Award className="w-8 h-8 text-blue-600" />
-                            </div>
-                            <h3 className="font-semibold">Chất Lượng</h3>
-                            <p className="text-sm text-muted-foreground">Cam kết 100% sản phẩm chính hãng, chất lượng cao</p>
-                        </div>
+                {/* BLOCK 2 — GIÁ TRỊ CỐT LÕI (CHỮ GIỮA / HÌNH BÊN PHẢI) */}
+                <section className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+                    {/* Text trung tâm */}
+                    <div className="text-center lg:text-left space-y-5">
+                        <p className="tracking-[0.35em] text-xs md:text-sm uppercase text-muted-foreground">MODE FASHION</p>
+                        <h2 className="text-2xl md:text-3xl font-semibold tracking-[0.08em] text-foreground">GIÁ TRỊ CỐT LÕI</h2>
 
-                        <div className="text-center space-y-3">
-                            <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mx-auto">
-                                <Users className="w-8 h-8 text-purple-600" />
-                            </div>
-                            <h3 className="font-semibold">Khách Hàng</h3>
-                            <p className="text-sm text-muted-foreground">Đặt lợi ích khách hàng lên hàng đầu</p>
-                        </div>
-
-                        <div className="text-center space-y-3">
-                            <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto">
-                                <Shield className="w-8 h-8 text-green-600" />
-                            </div>
-                            <h3 className="font-semibold">Uy Tín</h3>
-                            <p className="text-sm text-muted-foreground">Minh bạch, trung thực trong mọi giao dịch</p>
-                        </div>
-
-                        <div className="text-center space-y-3">
-                            <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center mx-auto">
-                                <Truck className="w-8 h-8 text-orange-600" />
-                            </div>
-                            <h3 className="font-semibold">Giao Hàng</h3>
-                            <p className="text-sm text-muted-foreground">Nhanh chóng, an toàn và chu đáo</p>
+                        <div className="space-y-3 text-sm md:text-base leading-relaxed text-muted-foreground max-w-xl mx-auto lg:mx-0">
+                            <p>
+                                <span className="font-semibold text-foreground">Tinh gọn:</span> Thiết kế tối giản, tập trung vào những item dễ phối, bền xu hướng và phù hợp với nhiều hoàn cảnh sử dụng.
+                            </p>
+                            <p>
+                                <span className="font-semibold text-foreground">Chất lượng:</span> Chú trọng từ khâu chọn sợi vải, xử lý màu, đường may đến kiểm tra thành phẩm trước khi đến tay khách hàng.
+                            </p>
+                            <p>
+                                <span className="font-semibold text-foreground">Trải nghiệm:</span> Mua sắm online hay tại cửa hàng đều được thiết kế mạch lạc, rõ ràng, hỗ trợ khách hàng từ khâu chọn size đến đổi trả.
+                            </p>
+                            <p>
+                                <span className="font-semibold text-foreground">Uy tín:</span> Minh bạch về giá, chương trình ưu đãi và chính sách bảo hành – xây dựng niềm tin dài lâu với khách hàng.
+                            </p>
                         </div>
                     </div>
-                </CardContent>
-            </Card>
 
-            {/* Statistics */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Thành Tựu Của Chúng Tôi</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-                        <div className="space-y-2">
-                            <div className="text-3xl font-bold text-blue-600">10K+</div>
-                            <div className="text-sm text-muted-foreground">Khách hàng</div>
-                        </div>
-                        <div className="space-y-2">
-                            <div className="text-3xl font-bold text-purple-600">5K+</div>
-                            <div className="text-sm text-muted-foreground">Sản phẩm</div>
-                        </div>
-                        <div className="space-y-2">
-                            <div className="text-3xl font-bold text-green-600">50+</div>
-                            <div className="text-sm text-muted-foreground">Thương hiệu</div>
-                        </div>
-                        <div className="space-y-2">
-                            <div className="text-3xl font-bold text-orange-600">98%</div>
-                            <div className="text-sm text-muted-foreground">Hài lòng</div>
-                        </div>
+                    {/* Hình minh họa core value */}
+                    <div className="w-full">
+                        <img src="/about01_introduce2_img.jpg" alt="Phụ kiện và thời trang SZ" className="w-full h-auto object-cover" />
                     </div>
-                </CardContent>
-            </Card>
-
-            <Separator className="my-8" />
-
-            {/* Call to Action */}
-            <div className="text-center">
-                <h3 className="text-2xl font-semibold mb-3">Cảm ơn bạn đã tin tưởng SZ!</h3>
-                <p className="text-muted-foreground mb-4">Chúng tôi luôn sẵn sàng phục vụ và mang đến trải nghiệm mua sắm tốt nhất cho bạn</p>
-                <Badge variant="outline" className="text-sm px-4 py-2">
-                    Hotline: 1900-xxxx | Email: support@sz.vn
-                </Badge>
+                </section>
             </div>
         </div>
     );

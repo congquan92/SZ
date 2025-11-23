@@ -15,4 +15,13 @@ export const UploadImgAPI = {
             throw error;
         }
     },
+    deleteImg: async (files: string[]) => {
+        try {
+            const response = await axiosInstance.post("/upload/delete", { files });
+            return response.data;
+        } catch (error) {
+            console.error("Delete image failed", error);
+            throw error;
+        }
+    },
 };

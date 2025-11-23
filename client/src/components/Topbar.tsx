@@ -1,7 +1,9 @@
+import { useSmoothScroll } from "@/hook/useSmoothScroll";
 import { Info, MapPin, Phone } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function Topbar() {
+    const { scrollToTop } = useSmoothScroll();
     return (
         <div className="bg-gray-900 text-white text-xs">
             <div className="container mx-auto px-4 py-2">
@@ -20,7 +22,7 @@ export default function Topbar() {
                         {/* <Link to="/tracking" className="hover:underline">
                             Tra cứu đơn hàng
                         </Link> */}
-                        <Link to="/cloth-size" className="hover:underline flex items-center gap-1">
+                        <Link to="/cloth-size" className="hover:underline flex items-center gap-1" onClick={scrollToTop}>
                             <Info size={12} /> Hướng dẫn chọn size
                         </Link>
                     </div>
