@@ -224,7 +224,7 @@ export default function Navbar() {
                             {mainNavLinks.map(({ to, label, className }) => (
                                 <NavigationMenuItem key={to}>
                                     <NavigationMenuLink asChild>
-                                        <Link to={to} className={`px-4 py-3 font-medium hover:text-black ${className || ""}`}>
+                                        <Link to={to} className={`px-4 py-3 font-medium hover:text-black ${className || ""}`} onClick={() => scrollToTop()}>
                                             {label}
                                         </Link>
                                     </NavigationMenuLink>
@@ -239,6 +239,7 @@ export default function Navbar() {
                                             // Click = điều hướng
                                             e.preventDefault();
                                             navigate(`/category/${top.id}/${toSlug(top.name)}/${top.name}`);
+                                            scrollToTop();
                                         }}
                                     >
                                         {top.name}
@@ -251,7 +252,7 @@ export default function Navbar() {
                                                     <div key={mid.id} className="space-y-2">
                                                         {/* Link cấp 2 */}
                                                         <NavigationMenuLink asChild>
-                                                            <Link to={`/category/${mid.id}/${toSlug(mid.name)}/${mid.name}`} className="font-medium leading-none hover:underline">
+                                                            <Link to={`/category/${mid.id}/${toSlug(mid.name)}/${mid.name}`} className="font-medium leading-none hover:underline" onClick={() => scrollToTop()}>
                                                                 {mid.name}
                                                             </Link>
                                                         </NavigationMenuLink>

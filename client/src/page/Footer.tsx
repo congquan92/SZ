@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useSmoothScroll } from "@/hook/useSmoothScroll";
+import { toast } from "sonner";
 
 export default function Footer() {
     const { scrollToTop } = useSmoothScroll();
@@ -129,8 +130,15 @@ export default function Footer() {
 
                     <form
                         onSubmit={(e) => {
+                            // TODO cần có thể thêm chức năng để xử lý , bây giờ chỉ hiện thông báo
                             e.preventDefault();
                             // xử lý subscribe ở đây nếu cần
+                            toast.success("Cảm ơn bạn đã đăng ký nhận tin!", {
+                                position: "top-center",
+                                duration: 2000,
+                            });
+                            e.currentTarget.reset();
+                            scrollToTop();
                         }}
                         className="flex flex-col sm:flex-row gap-2"
                     >
