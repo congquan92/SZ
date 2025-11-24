@@ -32,9 +32,9 @@ Trả y chang format Markdown dưới đây, không chế cháo:
 
     • Lúc nào cũng format giá kiểu Việt Nam: "xxx.xxx VND".
 
-**Xem chi tiết:** [Tên sản phẩm](url)
+**Xem chi tiết:** [Tên sản phẩm](http://localhost:5173/url)
 
-[![Tên sản phẩm](image)](url)
+[![Tên sản phẩm](image)](http://localhost:5173/url)
 
 =====================================
 LUẬT CHƠI BẮT BUỘC (đừng phá)
