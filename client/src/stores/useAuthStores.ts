@@ -32,7 +32,7 @@ interface AuthState {
     loading: boolean;
     token: string | null;
     login: (username: string, password: string) => Promise<{ status: number; data: { userId: string; email: string } }>;
-    signup: (fullName: string, gender: string, dateOfBirth: string, email: string, phone: string, username: string, password: string) => Promise<{ data: string }>;
+    signup: (fullName: string, gender: string, dateOfBirth: string, email: string, phone: string, username: string, password: string) => Promise<string>;
     logout: () => Promise<void>;
     fetchUser: () => Promise<void>;
     clearState: () => void;

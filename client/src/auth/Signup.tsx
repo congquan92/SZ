@@ -6,10 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Globe, Facebook } from "lucide-react";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuthStore } from "@/stores/useAuthStores";
 import OTP from "@/auth/OTP";
-import { AuthAPI } from "@/api/auth.api";
 export default function Signup() {
     const [formData, setFormData] = useState({
         fullName: "",
@@ -23,7 +22,6 @@ export default function Signup() {
     });
     const [message, setMessage] = useState("");
     const { loading, signup } = useAuthStore();
-    const navigate = useNavigate();
     const [step, setStep] = useState<"form" | "verify">("form");
     const [userId, setUserId] = useState("");
 
@@ -59,10 +57,9 @@ export default function Signup() {
         // }
         setMessage("");
         try {
-            const d = await signup(formData.fullName, formData.gender, formData.dateOfBirth, formData.email, formData.phone, formData.username, formData.password);
-            console.log("Signup data:", d);
-            setUserId(d.data);
-            await AuthAPI.sendOTP(d.data);
+            const id = await signup(formData.fullName, formData.gender, formData.dateOfBirth, formData.email, formData.phone, formData.username, formData.password);
+            // console.log("Signup data:", id);
+            setUserId(id);
             setStep("verify");
         } catch (e) {
             console.error(e);
@@ -178,7 +175,7 @@ export default function Signup() {
                     </Card>
                 </div>
             ) : (
-                <OTP email={formData.email} id_user={userId} onBack={() => setStep("form")} onLogin={() => navigate("/login")} />
+                <OTP email={formData.email} id_user={userId} onBack={() => setStep("form")} />
             )}
         </>
     );

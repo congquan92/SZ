@@ -36,12 +36,23 @@ export const AuthAPI = {
     verifyOTP: async (userId: string, code: string) => {
         try {
             const response = await axiosInstance.post(`/otp/verify-otp?userId=${userId}&inputOtp=${code}&otpType=VERIFICATION`);
-            return response;
+            return response.data;
         } catch (error) {
             console.error("Verify OTP failed", error);
             throw error;
         }
     },
+
+    verifyAccount: async (userId: string, resetToken: string) => {
+        try {
+            const response = await axiosInstance.post(`/user/verify-account?userId=${userId}&resetToken=${resetToken}`);
+            return response.data;
+        } catch (error) {
+            console.error("Verify Account failed", error);
+            throw error;
+        }
+    },
+
     getProfile: async () => {
         try {
             const response = await axiosInstance.get("/user/me");

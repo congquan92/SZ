@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-export default function OTP({ email, id_user, onBack, onLogin }: { email: string; id_user: string; onBack: () => void; onLogin: () => void }) {
+export default function OTP({ email, id_user, onBack }: { email: string; id_user: string; onBack: () => void }) {
     const [otp, setOtp] = useState("");
     const [timeLeft, setTimeLeft] = useState(300); // 5 phút = 300 giây
     const [resendAvailable, setResendAvailable] = useState(false);
@@ -27,12 +27,17 @@ export default function OTP({ email, id_user, onBack, onLogin }: { email: string
 
     const handleVerify = async () => {
         const response = await AuthAPI.verifyOTP(id_user, otp);
-        if (response.data.status === 1000) {
-            toast.success("Xác thực thành công!");
-            onLogin();
-        } else {
-            toast.error("Mã OTP không đúng!");
-        }
+        await AuthAPI.verifyAccount(id_user, response.data);
+        toast.success("Xác thực thành công! Bạn có thể đăng nhập ngay bây giờ.");
+        setTimeout(() => {
+            window.location.reload();
+        }, 2000);
+
+        // if (response.data.status === 1000) {
+        //     toast.success("Xác thực thành công!");
+        // } else {
+        //     toast.error("Mã OTP không đúng!");
+        // }
     };
 
     const handleResend = () => {
@@ -81,7 +86,7 @@ export default function OTP({ email, id_user, onBack, onLogin }: { email: string
                     <Button variant="ghost" disabled={!resendAvailable} onClick={handleResend} className="w-full cursor-pointer text-blue-600">
                         Gửi lại mã
                     </Button>
-                    <Button variant="secondary" onClick={onLogin} className="w-full cursor-pointer">
+                    <Button variant="secondary" onClick={() => window.location.reload()} className="w-full cursor-pointer">
                         Đăng nhập ngay
                     </Button>
                 </CardFooter>

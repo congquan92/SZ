@@ -116,7 +116,7 @@ export default function Login() {
                     </Card>
                 </div>
             ) : (
-                <OTP email={dataSub.email} id_user={dataSub.userId} onBack={() => setStep("form")} onLogin={() => navigate("/login")} />
+                <OTP email={dataSub.email} id_user={dataSub.userId} onBack={() => setStep("form")} />
             )}
         </>
     );
