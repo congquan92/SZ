@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  backend-server:
+    build: .
+    container_name: node_backend
+    # Cấu trúc: "PORT_MÁY_THẬT:PORT_TRONG_CONTAINER"
+    # ${PORT:-3000} nghĩa là: Lấy giá trị PORT trong file .env, nếu không có thì dùng 3000
+    ports:
+      - "${PORT:-3000}:${PORT:-3000}"
+    
+    volumes:
+      - .:/app
+      - /app/node_modules
+    
+    # Nạp toàn bộ biến trong .env vào môi trường của container
+    env_file:
+      - .env
+
+    command: npm run dev

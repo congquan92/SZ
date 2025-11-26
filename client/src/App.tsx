@@ -25,6 +25,7 @@ import About from "@/page/About";
 import Contact from "@/page/Contact";
 import Privacy from "@/page/Privacy";
 import Return from "@/page/Return";
+import PromoPopup from "@/components/PromoPopup";
 
 function App() {
     const { fetchUser, token, user } = useAuthStore();
@@ -67,6 +68,7 @@ function App() {
     return (
         <>
             <Navbar />
+            {/* <PromoPopup /> */}
             <Routes>
                 {LinkRoute.map(({ path, element }) => (
                     <Route key={path} path={path} element={element} />

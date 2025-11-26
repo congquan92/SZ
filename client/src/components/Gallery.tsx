@@ -38,7 +38,7 @@ export default function Gallery() {
                             <img src={product.img} alt={product.name} className="w-full max-h-[500px] object-cover transition-transform duration-500 group-hover:scale-105" />
 
                             {/* Overlay action */}
-                            <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {/* <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <Button
                                     size="icon"
                                     className="rounded-full bg-black/70 hover:bg-black text-white cursor-pointer"
@@ -54,7 +54,7 @@ export default function Gallery() {
                                 >
                                     <ShoppingBag className="w-4 h-4" />
                                 </Button>
-                            </div>
+                            </div> */}
                         </CardContent>
                     </Card>
                 ))}
